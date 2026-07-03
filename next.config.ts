@@ -28,12 +28,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "123demolition.com",
+        hostname: "demolishzone.yourdogzone.co.kr",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "**.123demolition.com",
+        hostname: "**.yourdogzone.co.kr",
         pathname: "/**",
       },
     ],
