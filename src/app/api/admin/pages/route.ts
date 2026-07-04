@@ -12,6 +12,7 @@ import { removeRankingForPage } from "@/lib/seo-ranking";
 import {
   getServicePeriodStatus,
 } from "@/lib/service-period";
+import { normalizeSeoKeyword } from "@/lib/seo-keyword";
 
 function getNaverCredentials(site: Awaited<ReturnType<typeof getSiteConfig>>) {
   return {
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const trimmedKeyword = keyword.trim();
+    const trimmedKeyword = normalizeSeoKeyword(keyword.trim());
     const site = await getSiteConfig();
 
     const generated = await generateSeoContent({

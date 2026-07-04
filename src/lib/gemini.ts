@@ -1,6 +1,12 @@
 import type { SiteConfig } from "./site-config-types";
 import type { SeoFaq } from "./data";
 import { extractRegionFromKeyword } from "./region-parse";
+import {
+  buildSeoCorePhrase,
+  generateVariedSeoTitle,
+  normalizeSeoKeyword,
+  polishSeoText,
+} from "./seo-keyword";
 
 interface GenerateOptions {
   keyword: string;
@@ -28,6 +34,9 @@ const CONTENT_RULES = `
 - 이미지는 시스템에서 본문에 자동 삽입되므로 img 태그·이미지 플레이스홀더 사용 금지
 - 다른 SEO 페이지와 문장·사례·섹션 순서가 겹치지 않게 작성
 - 자주 묻는 질문(FAQ) 3개: 키워드와 관련된 실질적 질문과 답변 (답변 2문장 이상, 토큰 사용)
+- 제목: 지역명을 두 번 반복하지 말 것 (예: "자양동 자양동철거" 금지 → "자양동철거" 한 번만)
+- 제목: "견적 저렴한 곳", "견적 지원금" 같은 뻔한 문구만 반복하지 말고, 키워드·지역·서비스 특성이 드러나게 매번 다른 표현 사용
+- 제목: 다른 페이지와 같은 패턴·같은 문장 구조 금지
 `;
 
 const WRITING_ANGLES = [
@@ -37,6 +46,17 @@ const WRITING_ANGLES = [
   "업종별(음식점·학원·사무실) 철거 차이와 주의사항을 중심으로",
   "견적 항목 분해와 숨은 비용 예방을 중심으로",
   "철거 후 폐기물 분리·반출과 환경 규정을 중심으로",
+];
+
+const TITLE_STYLE_HINTS = [
+  "전문 시공·무료 견적 강조형",
+  "폐업지원금·원스톱 강조형",
+  "현장 맞춤·일정 안내형",
+  "비용·범위 설명형",
+  "지역 상가 철거 특화형",
+  "브랜드 신뢰·대표 상담형",
+  "업종별 철거 포인트형",
+  "임대차·원상복구 연계형",
 ];
 
 function hashKeyword(keyword: string): number {
@@ -54,19 +74,24 @@ function pickAngle(keyword: string): string {
 }
 
 export async function generateSeoContent({
-  keyword,
+  keyword: rawKeyword,
   apiKey,
   site,
 }: GenerateOptions): Promise<GeneratedSeoContent> {
+  const keyword = normalizeSeoKeyword(rawKeyword);
+  const corePhrase = buildSeoCorePhrase(keyword);
+
   if (!apiKey) {
     return generateFallbackContent(keyword, site);
   }
 
   const { GoogleGenerativeAI } = await import("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(apiKey);
-  const region = extractRegionFromKeyword(keyword);
+  const region = extractRegionFromKeyword(keyword.replace(/\s/g, ""));
   const angle = pickAngle(keyword);
   const uniqueSeed = `${keyword}-${hashKeyword(keyword)}`;
+  const titleStyleHint =
+    TITLE_STYLE_HINTS[hashKeyword(keyword + "style") % TITLE_STYLE_HINTS.length];
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
@@ -86,17 +111,19 @@ export async function generateSeoContent({
 - 지원금: 기본 {{supportBase}}, 추가 {{supportExtra}}, 최대 {{supportMax}}
 - 특징: 폐업지원금 신청 대행, 무료 방문 견적, 철거·원상복구 원스톱, 전국 시공
 
-키워드: "${keyword}"
-${region ? `지역 맥락: ${region} 지역 상가·폐업철거` : ""}
+키워드: "${corePhrase}"
+(원본 입력: "${keyword}" — 지역명은 한 번만 사용)
+${region ? `지역 맥락: ${region} 지역 상가·폐업철거 (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
+제목 작성 스타일: ${titleStyleHint}
 작성 관점: ${angle}
 고유 시드(다른 글과 중복 금지): ${uniqueSeed}
 
-중요: 이전에 작성한 다른 키워드 페이지와 동일한 문장·구조·사례를 재사용하지 마세요. 키워드와 지역에 맞는 구체적인 상황을 새로 작성하세요.
+중요: 이전에 작성한 다른 키워드 페이지와 동일한 문장·구조·사례·제목 패턴을 재사용하지 마세요. 키워드와 지역에 맞는 구체적인 상황을 새로 작성하세요.
 ${CONTENT_RULES}
 
 JSON 형식으로만 응답:
 {
-  "title": "60자 이내 SEO 제목 ({{brandName}} 토큰 사용 가능)",
+  "title": "60자 이내 SEO 제목 — 지역명 1회만, {{brandName}} 토큰 사용 가능, 매번 다른 문장 구조",
   "description": "150자 이내 메타 설명 (토큰 사용 가능)",
   "slug": "영문 소문자 URL slug",
   "content": "HTML 본문",
@@ -126,8 +153,8 @@ JSON 형식으로만 응답:
     }
 
     return {
-      title: parsed.title,
-      description: parsed.description,
+      title: generateVariedSeoTitle(keyword, region, parsed.title),
+      description: polishSeoText(parsed.description, region),
       content: parsed.content,
       slug: parsed.slug,
       faqs: normalizeFaqs(parsed.faqs, keyword, site),
@@ -352,15 +379,17 @@ function generateFallbackContent(
   keyword: string,
   site: SiteConfig
 ): GeneratedSeoContent {
-  const region = extractRegionFromKeyword(keyword);
+  const region = extractRegionFromKeyword(keyword.replace(/\s/g, ""));
   const variantIdx = hashKeyword(keyword) % FALLBACK_VARIANTS.length;
   const content = FALLBACK_VARIANTS[variantIdx](keyword, region);
 
   const titleVariants = [
-    `${keyword} 전문 | {{brandName}}`,
-    `${region ? region + " " : ""}${keyword} 견적·지원금 | {{brandName}}`,
-    `{{brandName}} ${keyword} 원스톱 안내`,
-    `${keyword} 무료 방문 견적 | {{brandName}}`,
+    (k: string, r: string | null) => generateVariedSeoTitle(k, r),
+    (k: string, r: string | null) =>
+      `${r ? `${r} ` : ""}${buildSeoCorePhrase(k)} 무료 방문 견적 | {{brandName}}`,
+    (k: string) => `{{brandName}} · ${buildSeoCorePhrase(k)} 현장 맞춤`,
+    (k: string, r: string | null) =>
+      `${buildSeoCorePhrase(k)}${r ? ` (${r})` : ""} — {{brandName}}`,
   ];
   const descVariants = [
     `${keyword} 무료 방문 견적, 폐업지원금 신청 대행. {{brandName}}이 철거부터 원상복구까지 원스톱으로 해결해 드립니다.`,
@@ -373,8 +402,8 @@ function generateFallbackContent(
   const dIdx = hashKeyword(keyword + "d") % descVariants.length;
 
   return {
-    title: titleVariants[tIdx],
-    description: descVariants[dIdx],
+    title: titleVariants[tIdx](keyword, region),
+    description: polishSeoText(descVariants[dIdx], region),
     content,
     faqs: buildDefaultFaqs(keyword, site),
   };
