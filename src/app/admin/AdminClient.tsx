@@ -138,41 +138,30 @@ export default function AdminClient() {
           </div>
         </div>
 
-        {quota?.service && (
-          <div
-            className={`mb-6 rounded-2xl p-5 border ${
-              quota.service.active
-                ? "bg-blue-50 border-blue-200 text-blue-950"
-                : "bg-red-50 border-red-300 text-red-950"
-            }`}
-          >
-            <p className="font-semibold text-base">
-              앞으로 사용가능일은 총 {quota.service.daysRemaining}일 입니다.
-            </p>
-            {quota.service.expiresAt && (
-              <p className="text-sm mt-1 opacity-80">만료 예정일: {quota.service.expiresAt} (KST)</p>
-            )}
-            <p className="text-sm mt-3 leading-relaxed opacity-90">
-              기간 만료 후에는 새 SEO 페이지 생성이 제한됩니다.
-              <br />
-              기존페이지는 삭제 또는 변경될수 있습니다.
-            </p>
-          </div>
-        )}
-
         {quota && (
           <div
-            className={`mb-6 rounded-2xl p-4 border ${
-              quota.remaining > 0
-                ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+            className={`mb-6 rounded-xl px-4 py-3 border text-sm ${
+              serviceActive && quota.remaining > 0
+                ? "bg-white border-gray-200 text-dark"
                 : "bg-red-50 border-red-200 text-red-900"
             }`}
           >
-            <p className="font-semibold text-base">
-              오늘 {quota.remaining}개 페이지 생성이 가능한 상태입니다.
-            </p>
-            <p className="text-sm mt-1 opacity-80">
-              일일 한도 {quota.limit}개 · 오늘 {quota.used}개 사용 · {quota.today} (KST)
+            <p className="font-medium">
+              사용가능일{" "}
+              <span className="text-orange">{quota.service?.daysRemaining ?? 0}일</span>
+              {quota.service?.expiresAt && (
+                <span className="text-gray-500 font-normal">
+                  {" "}
+                  (만료 {quota.service.expiresAt})
+                </span>
+              )}
+              <span className="text-gray-300 mx-2">|</span>
+              오늘 생성 가능{" "}
+              <span className="text-orange">{quota.remaining}개</span>
+              <span className="text-gray-500 font-normal">
+                {" "}
+                / {quota.limit}개
+              </span>
             </p>
           </div>
         )}
