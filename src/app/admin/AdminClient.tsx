@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { guidePageUrl } from "@/lib/constants";
 import RankingHistoryModal from "@/components/RankingHistoryModal";
@@ -34,6 +34,8 @@ interface SeoQuota {
   };
 }
 
+const LIST_PAGE_SIZE = 10;
+
 export default function AdminClient() {
   const [pages, setPages] = useState<SeoPage[]>([]);
   const [keyword, setKeyword] = useState("");
@@ -52,6 +54,7 @@ export default function AdminClient() {
     Map<string, { status: string; pageUrl: string }>
   >(new Map());
   const [requestingCollection, setRequestingCollection] = useState<string | null>(null);
+  const [listPage, setListPage] = useState(1);
 
   const naverBtn =
     "inline-flex items-center justify-center px-3.5 py-2 text-xs font-bold text-white bg-[#03C75A] rounded-[3px] hover:bg-[#02b351] active:bg-[#02a048] transition-colors shadow-sm disabled:opacity-70";
@@ -116,6 +119,34 @@ export default function AdminClient() {
   useEffect(() => {
     void loadData();
   }, []);
+
+  const topRankedPages = useMemo(() => {
+    return pages
+      .map((page) => ({
+        page,
+        rank: rankings.get(page.id)?.rank ?? null,
+      }))
+      .filter((item): item is { page: SeoPage; rank: number } => item.rank !== null && item.rank > 0)
+      .sort((a, b) => a.rank - b.rank)
+      .slice(0, 5);
+  }, [pages, rankings]);
+
+  const totalListPages = Math.max(1, Math.ceil(pages.length / LIST_PAGE_SIZE));
+
+  const paginatedPages = useMemo(() => {
+    const start = (listPage - 1) * LIST_PAGE_SIZE;
+    return pages.slice(start, start + LIST_PAGE_SIZE);
+  }, [pages, listPage]);
+
+  useEffect(() => {
+    if (listPage > totalListPages) {
+      setListPage(totalListPages);
+    }
+  }, [listPage, totalListPages]);
+
+  const pageNumbers = useMemo(() => {
+    return Array.from({ length: totalListPages }, (_, i) => i + 1);
+  }, [totalListPages]);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,6 +245,82 @@ export default function AdminClient() {
 
   function isCollectionSubmitted(pageId: string): boolean {
     return collectionStatuses.get(pageId)?.status === "submitted";
+  }
+
+  function renderPageRow(page: SeoPage) {
+    const rankInfo = rankings.get(page.id);
+    const collectionDone = isCollectionSubmitted(page.id);
+    return (
+      <div
+        key={page.id}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-dark text-sm">{page.title}</p>
+          <p className="text-xs text-gray-400 mt-1 break-all">
+            {page.keyword} · {guidePageUrl(page.slug)}
+          </p>
+          <p className="text-xs mt-2">
+            <span className="text-gray-500">네이버 순위 </span>
+            <span className="font-semibold text-[#03C75A]">
+              {hasNaverApi ? formatRank(rankInfo?.rank ?? null) : "API 미설정"}
+            </span>
+            {hasNaverApi && rankInfo?.change != null && rankInfo.change !== 0 && (
+              <span className={rankInfo.change > 0 ? "text-emerald-600" : "text-red-500"}>
+                {formatRankChange(rankInfo.change)}
+              </span>
+            )}
+            {hasNaverApi && rankInfo?.rank === null && rankInfo?.checkedAt === null && (
+              <span className="text-gray-400"> · 상단 「네이버 순위 지금 확인」 클릭</span>
+            )}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          {collectionDone ? (
+            <span className={naverBtnDone} aria-label="순위반영요청 완료">
+              순위반영요청완료
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleCollectionRequest(page.id)}
+              disabled={requestingCollection === page.id}
+              className={naverBtn}
+            >
+              {requestingCollection === page.id ? "등록 중..." : "순위반영요청"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setRankModal({ pageId: page.id, keyword: page.keyword })}
+            className="text-xs px-3 py-1.5 border border-orange/40 text-orange rounded-lg hover:bg-orange/5 disabled:opacity-40"
+            disabled={!hasNaverApi}
+          >
+            순위변동 확인
+          </button>
+          <Link
+            href={guidePageUrl(page.slug)}
+            target="_blank"
+            className="text-xs px-3 py-1.5 border border-dark text-dark rounded-lg"
+          >
+            보기
+          </Link>
+          <button
+            type="button"
+            onClick={() => copySeoLink(page.slug, page.id)}
+            className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
+          >
+            {copiedPageId === page.id ? "복사됨" : "링크복사"}
+          </button>
+          <button
+            onClick={() => handleDeletePage(page.id)}
+            className="text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg"
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const serviceActive = !quota?.service || quota.service.active;
@@ -343,6 +450,43 @@ export default function AdminClient() {
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="font-bold text-dark mb-4">생성된 SEO 페이지 ({pages.length})</h2>
+
+          {pages.length > 0 && (
+            <div className="mb-6 rounded-lg border border-[#03C75A]/20 bg-[#f8fbf9] p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#03C75A] text-[10px] text-white font-black">
+                  N
+                </span>
+                <h3 className="text-sm font-bold text-[#03C75A]">순위 상위 TOP 5</h3>
+              </div>
+              {topRankedPages.length === 0 ? (
+                <p className="text-xs text-gray-400">
+                  {hasNaverApi
+                    ? "「네이버 순위 지금 확인」 실행 후 상위 키워드가 표시됩니다."
+                    : "Naver API 설정 후 순위를 확인할 수 있습니다."}
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                  {topRankedPages.map(({ page, rank }, index) => (
+                    <div
+                      key={page.id}
+                      className="bg-white border border-gray-200 rounded-[3px] px-3 py-2.5 hover:border-[#03C75A]/50 transition-colors"
+                    >
+                      <span className="text-[10px] font-medium text-gray-400">TOP {index + 1}</span>
+                      <p
+                        className="text-xs text-gray-900 mt-1 truncate font-medium"
+                        title={page.keyword}
+                      >
+                        {page.keyword}
+                      </p>
+                      <p className="text-sm font-bold text-[#03C75A] mt-1.5">{formatRank(rank)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {rankingsUpdated && (
             <p className="text-xs text-gray-400 mb-4">
               순위 갱신 {new Date(rankingsUpdated).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
@@ -359,87 +503,53 @@ export default function AdminClient() {
           ) : pages.length === 0 ? (
             <p className="text-gray-400">아직 생성된 페이지가 없습니다.</p>
           ) : (
-            <div className="space-y-3">
-              {pages.map((page) => {
-                const rankInfo = rankings.get(page.id);
-                const collectionDone = isCollectionSubmitted(page.id);
-                return (
-                <div
-                  key={page.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border border-gray-100 rounded-xl"
+            <>
+              <div className="space-y-3">{paginatedPages.map((page) => renderPageRow(page))}</div>
+
+              {totalListPages > 1 && (
+                <nav
+                  className="flex flex-wrap justify-center items-center gap-1 mt-6 pt-5 border-t border-gray-100"
+                  aria-label="SEO 페이지 목록 페이지"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-dark text-sm">{page.title}</p>
-                    <p className="text-xs text-gray-400 mt-1 break-all">
-                      {page.keyword} · {guidePageUrl(page.slug)}
-                    </p>
-                    <p className="text-xs mt-2">
-                      <span className="text-gray-500">네이버 순위 </span>
-                      <span className="font-semibold text-orange">
-                        {hasNaverApi ? formatRank(rankInfo?.rank ?? null) : "API 미설정"}
-                      </span>
-                      {hasNaverApi && rankInfo?.change != null && rankInfo.change !== 0 && (
-                        <span
-                          className={
-                            rankInfo.change > 0 ? "text-emerald-600" : "text-red-500"
-                          }
-                        >
-                          {formatRankChange(rankInfo.change)}
-                        </span>
-                      )}
-                      {hasNaverApi && rankInfo?.rank === null && rankInfo?.checkedAt === null && (
-                        <span className="text-gray-400"> · 상단 「네이버 순위 지금 확인」 클릭</span>
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 shrink-0">
-                    {collectionDone ? (
-                      <span className={naverBtnDone} aria-label="순위반영요청 완료">
-                        순위반영요청완료
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleCollectionRequest(page.id)}
-                        disabled={requestingCollection === page.id}
-                        className={naverBtn}
-                      >
-                        {requestingCollection === page.id ? "등록 중..." : "순위반영요청"}
-                      </button>
-                    )}
+                  <button
+                    type="button"
+                    onClick={() => setListPage((p) => Math.max(1, p - 1))}
+                    disabled={listPage === 1}
+                    className="min-w-[32px] h-8 px-2 text-xs text-gray-500 hover:text-[#03C75A] disabled:opacity-30 disabled:hover:text-gray-500"
+                  >
+                    ‹
+                  </button>
+                  {pageNumbers.map((num) => (
                     <button
+                      key={num}
                       type="button"
-                      onClick={() => setRankModal({ pageId: page.id, keyword: page.keyword })}
-                      className="text-xs px-3 py-1.5 border border-orange/40 text-orange rounded-lg hover:bg-orange/5 disabled:opacity-40"
-                      disabled={!hasNaverApi}
+                      onClick={() => setListPage(num)}
+                      className={`min-w-[32px] h-8 px-2 text-xs font-bold rounded-[3px] transition-colors ${
+                        listPage === num
+                          ? "bg-[#03C75A] text-white"
+                          : "text-gray-600 hover:bg-[#e8f9ef] hover:text-[#03C75A]"
+                      }`}
                     >
-                      순위변동 확인
+                      {num}
                     </button>
-                    <Link
-                      href={guidePageUrl(page.slug)}
-                      target="_blank"
-                      className="text-xs px-3 py-1.5 border border-dark text-dark rounded-lg"
-                    >
-                      보기
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => copySeoLink(page.slug, page.id)}
-                      className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
-                    >
-                      {copiedPageId === page.id ? "복사됨" : "링크복사"}
-                    </button>
-                    <button
-                      onClick={() => handleDeletePage(page.id)}
-                      className="text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              );
-              })}
-            </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setListPage((p) => Math.min(totalListPages, p + 1))}
+                    disabled={listPage === totalListPages}
+                    className="min-w-[32px] h-8 px-2 text-xs text-gray-500 hover:text-[#03C75A] disabled:opacity-30 disabled:hover:text-gray-500"
+                  >
+                    ›
+                  </button>
+                </nav>
+              )}
+
+              <p className="text-center text-[11px] text-gray-400 mt-3">
+                {pages.length}개 중 {(listPage - 1) * LIST_PAGE_SIZE + 1}–
+                {Math.min(listPage * LIST_PAGE_SIZE, pages.length)}번째 표시 (페이지당{" "}
+                {LIST_PAGE_SIZE}개)
+              </p>
+            </>
           )}
         </div>
       </div>
