@@ -57,27 +57,35 @@ html {
 
 .prose-seo .seo-content-image {
   margin: 1.75rem 0;
-  border-radius: 1rem;
+  background: transparent;
+  box-shadow: none;
+}
+
+.prose-seo .seo-content-image__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--gray-bg);
+  border-radius: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-.prose-seo .seo-content-image img {
+.prose-seo .seo-content-image__media img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
   object-fit: cover;
-  max-height: 28rem;
+  object-position: center;
 }
 
 .prose-seo .seo-content-image figcaption {
-  padding: 0.65rem 1rem;
+  padding: 0.55rem 0.75rem 0;
   font-size: 0.8rem;
   color: #666;
   text-align: center;
-  background: #fff;
-  border-top: 1px solid #eee;
+  background: transparent;
+  border-top: none;
 }
 
 .prose-seo .seo-image-gallery {
@@ -90,6 +98,7 @@ html {
   display: grid;
   gap: 1rem;
   margin: 1.75rem 0;
+  align-items: stretch;
 }
 
 .prose-seo .seo-image-row--1 {
@@ -106,10 +115,18 @@ html {
 
 .prose-seo .seo-image-row .seo-content-image {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.prose-seo .seo-image-row .seo-content-image img {
-  max-height: 20rem;
+.prose-seo .seo-image-row--1 .seo-content-image__media {
+  aspect-ratio: 16 / 9;
+}
+
+.prose-seo .seo-image-row--2 .seo-content-image__media,
+.prose-seo .seo-image-row--3 .seo-content-image__media {
+  aspect-ratio: 4 / 3;
 }
 
 .prose-seo .seo-image-block {
@@ -123,15 +140,11 @@ html {
 
   .prose-seo .seo-image-gallery .seo-content-image {
     margin: 0;
+    height: 100%;
   }
 
-  .prose-seo .seo-image-gallery .seo-content-image img {
-    max-height: 12rem;
-  }
-
-  .prose-seo .seo-image-row--2 .seo-content-image img,
-  .prose-seo .seo-image-row--3 .seo-content-image img {
-    max-height: 14rem;
+  .prose-seo .seo-image-gallery .seo-content-image__media {
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -139,6 +152,11 @@ html {
   .prose-seo .seo-image-row--2,
   .prose-seo .seo-image-row--3 {
     grid-template-columns: 1fr;
+  }
+
+  .prose-seo .seo-image-row--2 .seo-content-image__media,
+  .prose-seo .seo-image-row--3 .seo-content-image__media {
+    aspect-ratio: 16 / 10;
   }
 }
 

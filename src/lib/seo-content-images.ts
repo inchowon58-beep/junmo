@@ -76,7 +76,7 @@ function buildRowSizes(seed: string, total: number): number[] {
 }
 
 function buildSeoImageFigure(url: string, alt: string): string {
-  return `<figure class="seo-content-image"><img src="${url}" alt="${alt.replace(/"/g, "&quot;")}" loading="lazy" width="800" height="500" /><figcaption>${alt}</figcaption></figure>`;
+  return `<figure class="seo-content-image"><div class="seo-content-image__media"><img src="${url}" alt="${alt.replace(/"/g, "&quot;")}" loading="lazy" width="800" height="500" /></div><figcaption>${alt}</figcaption></figure>`;
 }
 
 function buildGalleryRow(urls: string[], keyword: string, startNum: number): string {
