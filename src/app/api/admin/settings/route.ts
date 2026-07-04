@@ -56,8 +56,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const current = { ...DEFAULT_SITE_CONFIG, ...(await getSettings()) };
-  const updated = { ...current };
+  const updated = { ...(await getSettings()) };
 
   for (const key of SITE_FIELDS) {
     if (body[key] !== undefined && body[key] !== null) {
@@ -70,7 +69,8 @@ export async function PUT(req: NextRequest) {
   }
 
   if (body.dailySeoLimit !== undefined && body.dailySeoLimit !== null) {
-    updated.dailySeoLimit = Math.max(0, parseInt(String(body.dailySeoLimit), 10) || 0);
+    const parsed = Number.parseInt(String(body.dailySeoLimit), 10);
+    updated.dailySeoLimit = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
   }
 
   if (body.serviceAvailableDays !== undefined && body.serviceAvailableDays !== null) {

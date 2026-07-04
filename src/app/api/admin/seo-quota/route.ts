@@ -13,5 +13,12 @@ export async function GET() {
     getServicePeriodStatus(),
   ]);
 
-  return NextResponse.json({ ...quota, service });
+  return NextResponse.json(
+    { ...quota, service },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 }

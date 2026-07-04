@@ -120,6 +120,20 @@ export default function AdminClient() {
     void loadData();
   }, []);
 
+  useEffect(() => {
+    const refreshQuota = () => {
+      if (document.visibilityState === "visible") {
+        void loadData();
+      }
+    };
+    window.addEventListener("focus", refreshQuota);
+    document.addEventListener("visibilitychange", refreshQuota);
+    return () => {
+      window.removeEventListener("focus", refreshQuota);
+      document.removeEventListener("visibilitychange", refreshQuota);
+    };
+  }, []);
+
   const topRankedPages = useMemo(() => {
     return pages
       .map((page) => ({

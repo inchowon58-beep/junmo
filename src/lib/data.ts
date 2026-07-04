@@ -82,10 +82,44 @@ function parseJson<T>(raw: string, fallback: T): T {
   }
 }
 
+async function readJsonFromBlobOrLocal<T>(
+  filename: string,
+  fallback: T
+): Promise<T | null> {
+  if (isBlobConfigured()) {
+    const raw = await readBlobText(filename);
+    if (raw) return parseJson(raw, fallback);
+    const filePath = path.join(DATA_DIR, filename);
+    try {
+      const localRaw = await fs.readFile(filePath, "utf-8");
+      return parseJson(localRaw, fallback);
+    } catch {
+      return null;
+    }
+  }
+
+  const filePath = path.join(DATA_DIR, filename);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const raw = await fs.readFile(filePath, "utf-8");
+      return JSON.parse(raw) as T;
+    } catch {
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        continue;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
 async function readJson<T>(filename: string, fallback: T): Promise<T> {
   if (isR2Configured()) {
     const raw = await readR2Text(r2Key("data", filename));
     if (raw) return parseJson(raw, fallback);
+    const fallbackData = await readJsonFromBlobOrLocal(filename, fallback);
+    if (fallbackData !== null) return fallbackData;
     return fallback;
   }
 
