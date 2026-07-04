@@ -59,11 +59,7 @@ export default function AdminClient() {
     return change > 0 ? ` ▲${change}` : ` ▼${Math.abs(change)}`;
   }
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  async function loadData() {
     setLoading(true);
     try {
       const [pagesRes, quotaRes, configRes, rankingsRes] = await Promise.all([
@@ -94,7 +90,11 @@ export default function AdminClient() {
       setMessage("데이터 로드 실패");
     }
     setLoading(false);
-  };
+  }
+
+  useEffect(() => {
+    void loadData();
+  }, []);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,7 +277,7 @@ export default function AdminClient() {
             <h2 className="font-bold text-dark">생성된 SEO 페이지 ({pages.length})</h2>
             {rankingsUpdated && (
               <p className="text-xs text-gray-400">
-                순위 갱신: {new Date(rankingsUpdated).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} · 하루 2회 자동 확인
+                순위 갱신: {new Date(rankingsUpdated).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })} · 자동 1회/일(21:00) · 「순위 지금 확인」으로 수동 가능
               </p>
             )}
           </div>

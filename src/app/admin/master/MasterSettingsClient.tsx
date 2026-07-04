@@ -59,11 +59,7 @@ export default function MasterSettingsClient() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
+  async function loadSettings() {
     const res = await fetch("/api/admin/settings");
     if (res.status === 401) {
       window.location.href = "/admin/master";
@@ -95,7 +91,11 @@ export default function MasterSettingsClient() {
       naverExposureId: settings.naverExposureId || "",
     });
     setNaverExposurePassword(settings.naverExposurePassword || "");
-  };
+  }
+
+  useEffect(() => {
+    void loadSettings();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

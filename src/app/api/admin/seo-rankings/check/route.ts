@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { runAllRankingChecks } from "@/lib/seo-ranking";
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 /** 관리자 수동 순위 확인 */
 export async function POST() {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAuthenticated, isMasterAuthenticated } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import { DataStorageError, getPages, savePage, deletePage } from "@/lib/data";
 import { buildSeoSlug, ensureUniqueSeoSlug } from "@/lib/seo-slug";
 import { generateSeoContent } from "@/lib/gemini";
