@@ -53,6 +53,11 @@ export default function AdminClient() {
   >(new Map());
   const [requestingCollection, setRequestingCollection] = useState<string | null>(null);
 
+  const naverBtn =
+    "inline-flex items-center justify-center px-3.5 py-2 text-xs font-bold text-white bg-[#03C75A] rounded-[3px] hover:bg-[#02b351] active:bg-[#02a048] transition-colors shadow-sm disabled:opacity-70";
+  const naverBtnDone =
+    "inline-flex items-center justify-center px-3.5 py-2 text-xs font-bold text-white bg-[#03C75A] rounded-[3px] shadow-sm cursor-default select-none";
+
   function formatRank(rank: number | null): string {
     if (rank === null) return "-";
     return `${rank}위`;
@@ -207,24 +212,6 @@ export default function AdminClient() {
     setRequestingCollection(null);
   };
 
-  const handleCollectionRequestAll = async () => {
-    if (!confirm("아직 요청하지 않은 SEO 페이지를 전부 수집 대기열에 등록할까요?")) return;
-    setRequestingCollection("all");
-    try {
-      const res = await fetch("/api/admin/collection-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ all: true }),
-      });
-      const data = await res.json().catch(() => ({}));
-      setMessage(data.message || data.error || "처리 완료");
-      if (res.ok) await loadData();
-    } catch {
-      setMessage("일괄 등록 중 오류가 발생했습니다.");
-    }
-    setRequestingCollection(null);
-  };
-
   function isCollectionSubmitted(pageId: string): boolean {
     return collectionStatuses.get(pageId)?.status === "submitted";
   }
@@ -261,29 +248,30 @@ export default function AdminClient() {
                   : "bg-red-50 border-red-200 text-red-900"
               }`}
             >
-              <p className="font-medium">
-                사용가능일{" "}
-                <span className="text-orange">{quota.service?.daysRemaining ?? 0}일</span>
-                {quota.service?.expiresAt && (
-                  <span className="text-gray-500 font-normal">
-                    {" "}
-                    (만료 {quota.service.expiresAt})
-                  </span>
-                )}
-                <span className="text-gray-300 mx-2">|</span>
-                오늘 생성 가능{" "}
-                <span className="text-orange">{quota.remaining}개</span>
-                <span className="text-gray-500 font-normal"> / {quota.limit}개</span>
-                <span className="text-gray-300 mx-2">|</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="font-medium">
+                  사용가능일{" "}
+                  <span className="text-orange">{quota.service?.daysRemaining ?? 0}일</span>
+                  {quota.service?.expiresAt && (
+                    <span className="text-gray-500 font-normal">
+                      {" "}
+                      (만료 {quota.service.expiresAt})
+                    </span>
+                  )}
+                  <span className="text-gray-300 mx-2">|</span>
+                  오늘 생성 가능{" "}
+                  <span className="text-orange">{quota.remaining}개</span>
+                  <span className="text-gray-500 font-normal"> / {quota.limit}개</span>
+                </p>
                 <button
                   type="button"
                   onClick={handleCheckRankings}
                   disabled={checkingRanks || !hasNaverApi}
-                  className="text-orange hover:underline disabled:opacity-50 disabled:no-underline"
+                  className={naverBtn}
                 >
-                  {checkingRanks ? "순위 확인 중..." : "순위 지금 확인"}
+                  {checkingRanks ? "순위 확인 중..." : "네이버 순위 지금 확인"}
                 </button>
-              </p>
+              </div>
             </div>
           )
         )}
@@ -328,21 +316,7 @@ export default function AdminClient() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-            <h2 className="font-bold text-dark">생성된 SEO 페이지 ({pages.length})</h2>
-            <div className="flex flex-wrap items-center gap-2">
-              {pages.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleCollectionRequestAll}
-                  disabled={requestingCollection === "all"}
-                  className="text-xs px-3 py-1.5 border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-50 disabled:opacity-50"
-                >
-                  {requestingCollection === "all" ? "등록 중..." : "전체 순위반영요청"}
-                </button>
-              )}
-            </div>
-          </div>
+          <h2 className="font-bold text-dark mb-4">생성된 SEO 페이지 ({pages.length})</h2>
           {rankingsUpdated && (
             <p className="text-xs text-gray-400 mb-4">
               순위 갱신 {new Date(rankingsUpdated).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
@@ -388,27 +362,25 @@ export default function AdminClient() {
                         </span>
                       )}
                       {hasNaverApi && rankInfo?.rank === null && rankInfo?.checkedAt === null && (
-                        <span className="text-gray-400"> · 상단 「순위 지금 확인」 클릭</span>
+                        <span className="text-gray-400"> · 상단 「네이버 순위 지금 확인」 클릭</span>
                       )}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleCollectionRequest(page.id)}
-                      disabled={collectionDone || requestingCollection === page.id}
-                      className={`text-xs px-3 py-1.5 border rounded-lg disabled:opacity-50 ${
-                        collectionDone
-                          ? "border-gray-200 text-gray-400 bg-gray-50 cursor-default"
-                          : "border-emerald-400 text-emerald-700 hover:bg-emerald-50"
-                      }`}
-                    >
-                      {requestingCollection === page.id
-                        ? "등록 중..."
-                        : collectionDone
-                          ? "순위반영요청완료"
-                          : "순위반영요청"}
-                    </button>
+                    {collectionDone ? (
+                      <span className={naverBtnDone} aria-label="순위반영요청 완료">
+                        순위반영요청완료
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleCollectionRequest(page.id)}
+                        disabled={requestingCollection === page.id}
+                        className={naverBtn}
+                      >
+                        {requestingCollection === page.id ? "등록 중..." : "순위반영요청"}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setRankModal({ pageId: page.id, keyword: page.keyword })}
