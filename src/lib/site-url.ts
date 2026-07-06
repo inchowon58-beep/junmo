@@ -9,38 +9,47 @@ function fromEnv(): string | null {
   return value ? value.replace(/\/$/, "") : null;
 }
 
+function hostFromHeadersGetter(
+  getHeader: (name: string) => string | null
+): string | null {
+  const raw =
+    getHeader("x-forwarded-host") ||
+    getHeader("host");
+  if (!raw) return null;
+  const clean = raw.split(",")[0].trim().replace(/^www\./, "");
+  const proto = getHeader("x-forwarded-proto") || "https";
+  return `${proto}://${clean}`.replace(/\/$/, "");
+}
+
+/** 요청 hostname 우선 — 테넌트 서브도메인 사이트맵·RSS용 */
 export function getSiteUrlFromRequest(request: Request): string {
-  const envUrl = fromEnv();
-  if (envUrl) return envUrl;
+  const fromReq = hostFromHeadersGetter((name) => request.headers.get(name));
+  if (fromReq) return fromReq;
 
-  const host =
-    request.headers.get("x-forwarded-host") ||
-    request.headers.get("host");
-  const proto = request.headers.get("x-forwarded-proto") || "https";
-
-  if (host) {
-    const cleanHost = host.split(",")[0].trim();
-    return `${proto}://${cleanHost}`.replace(/\/$/, "");
-  }
-
-  return DEFAULT_SITE_CONFIG.url.replace(/\/$/, "");
+  return fromEnv() || DEFAULT_SITE_CONFIG.url.replace(/\/$/, "");
 }
 
 export async function getSiteUrlAsync(config?: Pick<SiteConfig, "url">): Promise<string> {
-  const envUrl = fromEnv();
-  if (envUrl) return envUrl;
+  try {
+    const { getResolvedSiteConfig } = await import("@/utils/siteConfig");
+    const { config: resolved, isTenant } = await getResolvedSiteConfig();
+    if (isTenant && resolved.url) {
+      return resolved.url.replace(/\/$/, "");
+    }
+  } catch {
+    // ignore
+  }
 
   try {
     const h = await headers();
-    const host = h.get("x-forwarded-host") || h.get("host");
-    const proto = h.get("x-forwarded-proto") || "https";
-    if (host) {
-      const cleanHost = host.split(",")[0].trim();
-      return `${proto}://${cleanHost}`.replace(/\/$/, "");
-    }
+    const fromReq = hostFromHeadersGetter((name) => h.get(name));
+    if (fromReq) return fromReq;
   } catch {
     // headers() unavailable outside request
   }
+
+  const envUrl = fromEnv();
+  if (envUrl) return envUrl;
 
   return (config?.url || DEFAULT_SITE_CONFIG.url).replace(/\/$/, "");
 }

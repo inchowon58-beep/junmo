@@ -8,6 +8,11 @@ import { consumeSeoQuota, getSeoQuotaStatus } from "./seo-quota";
 import { enqueueCollectionRequest } from "./collection-queue";
 import { getServicePeriodStatus } from "./service-period";
 import { normalizeSeoKeyword, finalizeSeoTitle } from "./seo-keyword";
+import { getResolvedSiteConfig } from "@/utils/siteConfig";
+import {
+  getTenantPages,
+  saveTenantPage,
+} from "@/lib/supabase/tenant-pages";
 
 function getNaverCredentials(site: Awaited<ReturnType<typeof getSiteConfig>>) {
   return {
@@ -29,6 +34,7 @@ export class SeoCreateError extends Error {
 export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
   page: SeoPage;
   collectionEnqueued: boolean;
+  tenantId?: string;
 }> {
   const service = await getServicePeriodStatus();
   if (!service.active) {
@@ -47,7 +53,11 @@ export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
   }
 
   const trimmedKeyword = normalizeSeoKeyword(rawKeyword.trim());
-  const existingPages = await getPages();
+  const { tenant, isTenant, config: site } = await getResolvedSiteConfig();
+
+  const existingPages =
+    isTenant && tenant ? await getTenantPages(tenant.id) : await getPages();
+
   const duplicate = existingPages.find(
     (p) => normalizeSeoKeyword(p.keyword) === trimmedKeyword
   );
@@ -58,7 +68,6 @@ export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
     );
   }
 
-  const site = await getSiteConfig();
   let generated;
   try {
     generated = await generateSeoContent({
@@ -72,7 +81,7 @@ export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
   }
 
   const now = new Date().toISOString();
-  const pageId = `page-${Date.now()}`;
+  const pageId = isTenant && tenant ? crypto.randomUUID() : `page-${Date.now()}`;
   const baseSlug = buildSeoSlug(trimmedKeyword, pageId, generated.slug);
   const slug = await ensureUniqueSeoSlug(
     baseSlug,
@@ -100,13 +109,20 @@ export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
   };
 
   try {
-    await savePage(page);
+    if (isTenant && tenant) {
+      await saveTenantPage(tenant.id, page);
+    } else {
+      await savePage(page);
+    }
     await consumeSeoQuota();
   } catch (error) {
     if (error instanceof DataStorageError) {
       throw new SeoCreateError(error.message, "STORAGE");
     }
-    throw error;
+    throw new SeoCreateError(
+      error instanceof Error ? error.message : "SEO 페이지 저장 실패",
+      "STORAGE"
+    );
   }
 
   const enqueueResult = await enqueueCollectionRequest(pageId, page);
@@ -117,5 +133,6 @@ export async function createSeoPageFromKeyword(rawKeyword: string): Promise<{
   return {
     page,
     collectionEnqueued: enqueueResult.ok,
+    tenantId: tenant?.id,
   };
 }

@@ -96,8 +96,14 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
-        <SiteConfigProvider config={config}>
+      <body
+        className={`antialiased${
+          tenant?.content_data?.designVariant
+            ? ` tenant-${tenant.content_data.designVariant}`
+            : ""
+        }`}
+      >
+        <SiteConfigProvider config={config} tenantUi={tenant?.content_data ?? null}>
           <Header />
           <main className="pb-24">{children}</main>
           <FooterWrapper />

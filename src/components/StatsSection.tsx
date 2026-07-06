@@ -1,16 +1,22 @@
-const STATS = [
-  { label: "누적 상담 건수", value: "4,200+", suffix: "" },
-  { label: "월 평균 시공", value: "85+", suffix: "건" },
-  { label: "무료 방문 견적", value: "100", suffix: "%" },
-  { label: "지원금 수급 성공률", value: "96", suffix: "%" },
-];
+import { getResolvedSiteConfig } from "@/utils/siteConfig";
+import { getDefaultStats } from "@/lib/tenant-content";
 
-export default function StatsSection() {
+export default async function StatsSection() {
+  const { tenant } = await getResolvedSiteConfig();
+  const stats = tenant?.content_data?.stats?.length
+    ? tenant.content_data.stats
+    : getDefaultStats();
+  const variant = tenant?.content_data?.designVariant || "classic";
+
   return (
-    <section className="bg-dark text-white py-12 lg:py-16">
+    <section className={`bg-dark text-white py-12 lg:py-16 tenant-stats-${variant}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {STATS.map((stat) => (
+        <div
+          className={`grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 ${
+            variant === "bold" ? "divide-x divide-white/10" : ""
+          }`}
+        >
+          {stats.map((stat) => (
             <div key={stat.label} className="text-center animate-count">
               <p className="text-3xl lg:text-4xl font-black text-orange mb-2">
                 {stat.value}

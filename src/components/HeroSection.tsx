@@ -7,9 +7,20 @@ import { INQUIRY_SECTION_ID, inquiryAccentButtonClass, showCompanyContact } from
 export default async function HeroSection() {
   const site = await getSiteConfig();
   const showCompany = showCompanyContact(site.exposureMode);
+  const { getResolvedSiteConfig } = await import("@/utils/siteConfig");
+  const { tenant } = await getResolvedSiteConfig();
+  const ui = tenant?.content_data;
+
+  const badge = ui?.heroBadge || "폐업 철거, 부담 없이 마무리";
+  const intro = ui?.heroIntro || "폐업지원금 신청부터 철거·원상복구까지";
+  const closing = ui?.heroClosing || "가 한 번에 해결합니다";
+  const variant = ui?.designVariant || "classic";
 
   return (
-    <section id="about" className="relative min-h-[85vh] flex items-center overflow-hidden">
+    <section
+      id="about"
+      className={`hero-section relative min-h-[85vh] flex items-center overflow-hidden tenant-hero-${variant}`}
+    >
       <Image
         src={getImageUrl(1, site)}
         alt={`${site.brandName} 폐업철거 전문`}
@@ -17,23 +28,24 @@ export default async function HeroSection() {
         className="object-cover"
         priority
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-dark/90 via-dark/70 to-dark/40" />
+      <div className="hero-overlay absolute inset-0" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-        <div className="max-w-2xl">
-          <span className="inline-block bg-orange text-white text-sm font-bold px-4 py-1.5 rounded-full mb-6">
-            폐업 철거, 부담 없이 마무리
+        <div className={`max-w-2xl ${variant === "modern" ? "lg:ml-auto lg:text-right" : ""}`}>
+          <span className="hero-badge inline-block bg-orange text-white text-sm font-bold px-4 py-1.5 rounded-full mb-6">
+            {badge}
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-4">
             {site.tagline}
           </h1>
           <p className="text-lg sm:text-xl text-gray-200 mb-8 leading-relaxed">
-            폐업지원금 신청부터 철거·원상복구까지
+            {intro}
             <br />
-            <strong className="text-orange">{site.brandName}</strong>가 한 번에 해결합니다
+            <strong className="text-orange">{site.brandName}</strong>
+            {closing}
           </p>
 
-          <div className="flex flex-wrap gap-3">
+          <div className={`flex flex-wrap gap-3 ${variant === "modern" ? "lg:justify-end" : ""}`}>
             {showCompany && (
               <a
                 href={`tel:${phoneToTel(site.phone)}`}

@@ -46,7 +46,7 @@ function mergeTenantIntoConfig(
     brandName: tenant.site_name || legacy.brandName,
     url: `${proto}://${tenant.subdomain}`,
     tagline: content.tagline || tenant.site_name || legacy.tagline,
-    description: content.description || content.body?.slice(0, 160) || legacy.description,
+    description: content.description || content.aboutText || content.body?.slice(0, 160) || legacy.description,
     supportBase: content.supportBase || legacy.supportBase,
     supportExtra: content.supportExtra || legacy.supportExtra,
     supportMax: content.supportMax || legacy.supportMax,

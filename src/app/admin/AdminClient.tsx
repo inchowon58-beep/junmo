@@ -119,7 +119,10 @@ export default function AdminClient() {
         window.location.href = "/";
         return;
       }
-      if (pagesRes.ok) setPages(await pagesRes.json());
+      if (pagesRes.ok) {
+        const pagesData = await pagesRes.json();
+        setPages(Array.isArray(pagesData) ? pagesData : pagesData.pages || []);
+      }
       if (quotaRes.ok) setQuota(await quotaRes.json());
       if (configRes.ok) {
         const config = await configRes.json();

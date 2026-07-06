@@ -9,6 +9,7 @@ import {
   normalizeSupabaseUrl,
 } from "@/lib/supabase/tenant-db";
 import { pickThemeColor } from "@/lib/tenant-theme";
+import { pickTenantContentPackage } from "@/lib/tenant-content";
 import type { CreateSiteInput, TenantContentData } from "@/types/tenant";
 
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
@@ -262,12 +263,12 @@ export async function POST(req: NextRequest) {
     }
 
     const themeColor = pickThemeColor(subdomain);
-    const contentData: TenantContentData = {
+    const contentData: TenantContentData = pickTenantContentPackage(
+      subdomain,
+      siteName,
       keywords,
-      body: bodyContent,
-      description: bodyContent.slice(0, 160) || `${siteName} 공식 사이트`,
-      tagline: keywords.split(/[,\n]/)[0]?.trim() || siteName,
-    };
+      bodyContent
+    );
 
     const row = await insertTenantSiteConfig({
       site_name: siteName,

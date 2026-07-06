@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { notFound } from "next/navigation";
-import { getPageByKey } from "@/lib/data";
+import { resolvePageByKey } from "@/lib/pages-resolver";
 import { getSiteConfig, resolveSeoPage } from "@/lib/site-config";
 import { OgBrandedLayout, OG_SIZE } from "@/lib/og-template";
 
@@ -14,7 +14,10 @@ interface Props {
 
 export default async function GuideOpenGraphImage({ params }: Props) {
   const { slug } = await params;
-  const [page, config] = await Promise.all([getPageByKey(slug), getSiteConfig()]);
+  const [{ page }, config] = await Promise.all([
+    resolvePageByKey(slug),
+    getSiteConfig(),
+  ]);
   if (!page) notFound();
 
   const resolved = resolveSeoPage(page, config);

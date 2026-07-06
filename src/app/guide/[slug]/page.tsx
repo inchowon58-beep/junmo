@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { getPageByKey } from "@/lib/data";
+import { resolvePageByKey } from "@/lib/pages-resolver";
 import { guidePageUrl } from "@/lib/constants";
 import { buildPageMetadata, getOgImageAbsoluteUrl } from "@/lib/metadata";
 import { buildDefaultFaqs } from "@/lib/gemini";
@@ -28,7 +28,10 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const [page, config] = await Promise.all([getPageByKey(slug), getSiteConfig()]);
+  const [{ page }, config] = await Promise.all([
+    resolvePageByKey(slug),
+    getSiteConfig(),
+  ]);
   if (!page) return { title: "페이지를 찾을 수 없습니다" };
 
   const resolved = resolveSeoPage(page, config);
@@ -48,7 +51,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuidePage({ params }: Props) {
   const { slug } = await params;
-  const [page, config] = await Promise.all([getPageByKey(slug), getSiteConfig()]);
+  const [{ page }, config] = await Promise.all([
+    resolvePageByKey(slug),
+    getSiteConfig(),
+  ]);
   if (!page) notFound();
 
   const resolved = resolveSeoPage(page, config);

@@ -1,5 +1,5 @@
-import { getPages } from "./data";
 import { guidePageUrl } from "./constants";
+import { resolvePagesContext } from "./pages-resolver";
 import { resolveSeoPage, type SiteConfig } from "./site-config";
 
 export interface RelatedPageLink {
@@ -30,7 +30,7 @@ export async function getRelatedPages(
   config: SiteConfig,
   count = 5
 ): Promise<RelatedPageLink[]> {
-  const all = await getPages();
+  const { pages: all } = await resolvePagesContext();
   const others = all.filter((p) => p.slug !== currentSlug);
   if (others.length === 0) return [];
 

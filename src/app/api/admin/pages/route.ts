@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
-import { DataStorageError, deletePage, getPages } from "@/lib/data";
+import { DataStorageError, deletePage } from "@/lib/data";
 import { createSeoPageFromKeyword, SeoCreateError } from "@/lib/seo-page-create";
 import { removeCollectionJobsForPage } from "@/lib/collection-queue";
 import { removeRankingForPage } from "@/lib/seo-ranking";
+import { resolvePagesContext } from "@/lib/pages-resolver";
+import { deleteTenantPage } from "@/lib/supabase/tenant-pages";
+import { getResolvedSiteConfig } from "@/utils/siteConfig";
 
 export const maxDuration = 120;
 
@@ -11,8 +14,8 @@ export async function GET() {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const pages = await getPages();
-  return NextResponse.json(pages);
+  const { pages, tenant, isTenant } = await resolvePagesContext();
+  return NextResponse.json({ pages, tenantId: tenant?.id ?? null, isTenant });
 }
 
 export async function POST(req: NextRequest) {
@@ -27,10 +30,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { page, collectionEnqueued } = await createSeoPageFromKeyword(keyword.trim());
+    const { page, collectionEnqueued, tenantId } = await createSeoPageFromKeyword(
+      keyword.trim()
+    );
     return NextResponse.json({
       ...page,
       collectionEnqueued,
+      tenantId,
     });
   } catch (error) {
     if (error instanceof SeoCreateError) {
@@ -59,8 +65,15 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
-  await deletePage(id);
-  await removeRankingForPage(id);
-  await removeCollectionJobsForPage(id);
+  const { tenant, isTenant } = await getResolvedSiteConfig();
+
+  if (isTenant && tenant) {
+    await deleteTenantPage(tenant.id, id);
+  } else {
+    await deletePage(id);
+    await removeRankingForPage(id);
+    await removeCollectionJobsForPage(id);
+  }
+
   return NextResponse.json({ success: true });
 }

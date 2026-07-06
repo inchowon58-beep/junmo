@@ -1,5 +1,5 @@
 import { KNOWN_REGIONS, extractRegionFromKeyword } from "./region-parse";
-import { getPages } from "./data";
+import { resolvePagesContext } from "./pages-resolver";
 import { guidePageUrl } from "./constants";
 import type { SiteConfig } from "./site-config-types";
 
@@ -92,7 +92,7 @@ export async function getNearbyRegionLinks(
   _config: SiteConfig
 ): Promise<NearbyRegionLink[]> {
   const names = getNearbyRegionNames(currentRegion, currentSlug, 5);
-  const pages = await getPages();
+  const { pages } = await resolvePagesContext();
 
   return names.map((region) => {
     const match = pages.find((p) => {

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getPages } from "@/lib/data";
 import { guidePageUrl } from "@/lib/constants";
+import { resolvePagesContext } from "@/lib/pages-resolver";
 import { getSiteConfig, getPageImageUrl, resolveSeoPage } from "@/lib/site-config";
 import { escapeXml, stripHtml, toCdata, toRfc822 } from "@/lib/site-url";
 
@@ -35,9 +35,9 @@ function normalizeEntry(
   };
 }
 
-/** Blob·로컬 data/pages.json 기준 — 생성되는 모든 SEO 페이지 반영 */
+/** hostname·테넌트 기준 SEO 페이지 목록 */
 export async function getFeedEntries(baseUrl: string): Promise<FeedEntry[]> {
-  const [pages, config] = await Promise.all([getPages(), getSiteConfig()]);
+  const [{ pages }, config] = await Promise.all([resolvePagesContext(), getSiteConfig()]);
 
   return pages
     .map((page) => {

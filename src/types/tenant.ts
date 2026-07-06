@@ -17,6 +17,15 @@ export interface TenantContentData {
   supportExtra?: string;
   supportMax?: string;
   exposureMode?: "cpa" | "company";
+  /** classic | modern | bold */
+  designVariant?: "classic" | "modern" | "bold";
+  heroBadge?: string;
+  heroIntro?: string;
+  heroClosing?: string;
+  heroLead?: string;
+  aboutText?: string;
+  whyUsTitle?: string;
+  stats?: { label: string; value: string; suffix: string }[];
 }
 
 export interface TenantSiteConfigRow {
