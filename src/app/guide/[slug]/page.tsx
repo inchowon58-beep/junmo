@@ -17,7 +17,7 @@ import LocalPartnersSection from "@/components/LocalPartnersSection";
 import QuickInquiryForm from "@/components/QuickInquiryForm";
 import { buildSeoBrowserTitle } from "@/lib/seo-keyword";
 import { ensureLocalPartners } from "@/lib/seo-local-partners";
-import { INQUIRY_SECTION_ID, showCompanyContact } from "@/lib/exposure-mode";
+import { INQUIRY_SECTION_ID, inquiryOnDarkBgClass, showCompanyContact } from "@/lib/exposure-mode";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -168,7 +168,7 @@ export default async function GuidePage({ params }: Props) {
             )}
             <Link
               href={`#${INQUIRY_SECTION_ID}`}
-              className="inline-flex items-center gap-2 bg-white text-dark font-bold px-6 py-3 rounded-full hover:bg-gray-100 transition"
+              className={`inline-flex items-center gap-2 font-bold px-6 py-3 rounded-full transition ${inquiryOnDarkBgClass(config.exposureMode)}`}
             >
               {showCompany ? "3초 견적문의" : "3초 견적신청 문의하기"}
             </Link>

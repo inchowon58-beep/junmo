@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getSiteConfig, phoneToTel } from "@/lib/site-config";
 import { getImageUrl } from "@/lib/site-images";
-import { INQUIRY_SECTION_ID, showCompanyContact } from "@/lib/exposure-mode";
+import { INQUIRY_SECTION_ID, inquiryAccentButtonClass, showCompanyContact } from "@/lib/exposure-mode";
 
 export default async function SupportSection() {
   const site = await getSiteConfig();
@@ -39,7 +39,7 @@ export default async function SupportSection() {
               )}
               <Link
                 href={`/#${INQUIRY_SECTION_ID}`}
-                className="inline-flex items-center gap-2 bg-dark text-white font-bold px-6 py-3 rounded-full hover:bg-dark-light transition"
+                className={`inline-flex items-center gap-2 font-bold px-6 py-3 rounded-full transition ${inquiryAccentButtonClass(site.exposureMode)}`}
               >
                 {showCompany ? "3초 견적문의" : "3초 견적신청 문의하기"}
               </Link>

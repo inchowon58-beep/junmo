@@ -3,19 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSiteConfig } from "@/components/SiteConfigProvider";
-import { inquiryButtonLabel, inquiryHref } from "@/lib/exposure-mode";
+import {
+  inquiryAccentButtonClass,
+  inquiryButtonLabel,
+  inquiryHref,
+  isCpaExposure,
+} from "@/lib/exposure-mode";
 
 type InquiryButtonContext = "header" | "floating" | "cta";
 
 const baseClass =
   "inline-flex items-center justify-center font-bold transition whitespace-nowrap";
 
-const variants: Record<InquiryButtonContext, string> = {
-  header:
-    "px-5 py-2.5 bg-dark text-white text-sm rounded-full hover:bg-dark-light border border-dark",
+const layoutVariants: Record<InquiryButtonContext, string> = {
+  header: "px-5 py-2.5 text-sm rounded-full",
   floating:
-    "pointer-events-auto flex-col gap-0.5 bg-dark text-white py-3.5 px-5 sm:px-6 rounded-full shadow-lg hover:bg-dark-light active:scale-[0.98]",
-  cta: "px-8 py-4 bg-dark text-white rounded-full hover:bg-dark-light transition shadow-lg text-lg",
+    "pointer-events-auto flex-col gap-0.5 py-3.5 px-5 sm:px-6 rounded-full shadow-lg active:scale-[0.98]",
+  cta: "px-8 py-4 rounded-full transition shadow-lg text-lg",
 };
 
 interface InquiryLinkButtonProps {
@@ -33,12 +37,16 @@ export default function InquiryLinkButton({
   const pathname = usePathname();
   const href = inquiryHref(pathname);
   const label = inquiryButtonLabel(site.exposureMode, context);
+  const accent = inquiryAccentButtonClass(site.exposureMode);
+  const isCpa = isCpaExposure(site.exposureMode);
 
   return (
     <Link
       href={href}
       onClick={onClick}
-      className={`${baseClass} ${variants[context]} ${className}`}
+      className={`${baseClass} ${layoutVariants[context]} ${accent} ${
+        !isCpa && context === "header" ? "border border-dark" : ""
+      } ${className}`}
     >
       {context === "floating" ? (
         <>

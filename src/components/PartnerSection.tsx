@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSiteConfig } from "@/components/SiteConfigProvider";
-import { INQUIRY_SECTION_ID, showCompanyContact } from "@/lib/exposure-mode";
+import { INQUIRY_SECTION_ID, inquiryAccentButtonClass, showCompanyContact } from "@/lib/exposure-mode";
 
 export default function PartnerSection() {
   const site = useSiteConfig();
@@ -35,7 +35,7 @@ export default function PartnerSection() {
           ) : (
             <Link
               href={`/#${INQUIRY_SECTION_ID}`}
-              className="px-8 py-3 bg-dark text-white font-bold rounded-full hover:bg-dark-light transition"
+              className={`px-8 py-3 font-bold rounded-full transition ${inquiryAccentButtonClass(site.exposureMode)}`}
             >
               파트너·팀 지원 문의
             </Link>

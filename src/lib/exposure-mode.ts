@@ -33,3 +33,17 @@ export function inquiryButtonLabel(mode: ExposureMode, context: "header" | "floa
 export function inquiryFormTitle(mode: ExposureMode): string {
   return mode === "cpa" ? "3초 견적신청 문의하기" : "3초 견적신청 문의하기";
 }
+
+/** CPA: 주황(기본) / 업체정보: 검정(보조) */
+export function inquiryAccentButtonClass(mode: ExposureMode): string {
+  return isCpaExposure(mode)
+    ? "bg-orange text-white hover:bg-orange-light"
+    : "bg-dark text-white hover:bg-dark-light";
+}
+
+/** 어두운 배경 위 견적 버튼 — CPA는 주황, 업체정보는 흰색 보조 */
+export function inquiryOnDarkBgClass(mode: ExposureMode): string {
+  return isCpaExposure(mode)
+    ? "bg-orange text-white hover:bg-orange-light"
+    : "bg-white text-dark hover:bg-gray-100";
+}

@@ -5,7 +5,7 @@ import {
   INQUIRY_PRIVACY_SECTIONS,
   INQUIRY_PRIVACY_SUMMARY,
 } from "@/lib/inquiry-privacy";
-import { inquiryFormTitle, INQUIRY_SECTION_ID, type ExposureMode } from "@/lib/exposure-mode";
+import { inquiryFormTitle, INQUIRY_SECTION_ID, inquiryAccentButtonClass, type ExposureMode } from "@/lib/exposure-mode";
 
 interface QuickInquiryFormProps {
   keyword: string;
@@ -240,7 +240,7 @@ export default function QuickInquiryForm({
         <button
           type="submit"
           disabled={submitting}
-          className="mt-5 w-full py-4 bg-dark text-white font-bold text-lg rounded-xl hover:bg-dark-light transition disabled:opacity-50 shadow-md"
+          className={`mt-5 w-full py-4 text-white font-bold text-lg rounded-xl transition disabled:opacity-50 shadow-md ${inquiryAccentButtonClass(exposureMode)}`}
         >
           {submitting ? "신청 중..." : "신청하기"}
         </button>

@@ -10,7 +10,11 @@ export default function FixedContactBar() {
 
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 flex justify-center px-4 pb-4 sm:pb-5 safe-area-pb pointer-events-none bg-transparent">
-      <div className="pointer-events-auto flex items-center gap-2 sm:gap-3 max-w-[calc(100%-2rem)]">
+      <div
+        className={`pointer-events-auto flex items-center gap-2 sm:gap-3 ${
+          showCompany ? "max-w-[calc(100%-2rem)]" : "w-full max-w-md justify-center"
+        }`}
+      >
         {showCompany && (
           <a
             href={`tel:${site.phoneTel}`}
