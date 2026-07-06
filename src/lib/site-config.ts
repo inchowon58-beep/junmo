@@ -29,13 +29,20 @@ const LEGACY_BRANDS = ["123철거", "1977철거"];
 const LEGACY_PHONES = ["1555-7321", "15557321"];
 const LEGACY_COMPANIES = ["주식회사베룸", "주식회사 베룸"];
 
-export async function getSiteConfig(): Promise<SiteConfig> {
+export async function getLegacySiteConfig(): Promise<SiteConfig> {
   const stored = await getSettings();
   const merged = { ...DEFAULT_SITE_CONFIG, ...stored };
   return {
     ...merged,
     exposureMode: resolveExposureMode(merged.exposureMode),
   };
+}
+
+/** hostname 테넌트 설정 반영 (공개 페이지·컴포넌트용) */
+export async function getSiteConfig(): Promise<SiteConfig> {
+  const { getResolvedSiteConfig } = await import("@/utils/siteConfig");
+  const { config } = await getResolvedSiteConfig();
+  return config;
 }
 
 export function getPageImageUrl(page: SeoPage, config: SiteConfig): string {

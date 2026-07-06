@@ -202,11 +202,16 @@ export async function POST(req: NextRequest) {
     }
 
     const vercel = await registerVercelDomain(subdomain);
+    let vercelNote = "";
+
     if (!vercel.ok) {
-      return NextResponse.json(
-        { error: vercel.error || "Vercel 도메인 등록에 실패했습니다." },
-        { status: 502 }
-      );
+      const err = vercel.error || "Vercel 도메인 등록에 실패했습니다.";
+      if (err.includes("다른 Vercel 프로젝트")) {
+        return NextResponse.json({ error: err }, { status: 502 });
+      }
+      vercelNote = ` (Vercel 자동 등록 생략: ${err})`;
+    } else if (vercel.data?.alreadyLinked) {
+      vercelNote = " (Vercel 도메인은 이미 연결되어 있었습니다)";
     }
 
     const themeColor = pickThemeColor(subdomain);
@@ -227,9 +232,6 @@ export async function POST(req: NextRequest) {
     });
 
     const siteUrl = `https://${subdomain}`;
-    const vercelNote = vercel.data?.alreadyLinked
-      ? " (Vercel 도메인은 이미 연결되어 있었습니다)"
-      : "";
 
     return NextResponse.json({
       success: true,
@@ -237,7 +239,8 @@ export async function POST(req: NextRequest) {
       subdomain,
       siteUrl,
       themeColor,
-      vercelDomain: vercel.data,
+      vercelDomain: vercel.ok ? vercel.data : undefined,
+      vercelSkipped: !vercel.ok,
       message: `사이트가 생성되었습니다.${vercelNote} DNS 전파 후 ${siteUrl} 에서 확인하세요.`,
     });
   } catch (e) {

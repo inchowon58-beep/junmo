@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getSiteConfig, type SiteConfig } from "@/lib/site-config";
+import { getLegacySiteConfig, type SiteConfig } from "@/lib/site-config";
 import { DEFAULT_SITE_CONFIG } from "@/lib/site-config-types";
 import { resolveExposureMode } from "@/lib/exposure-mode";
 import {
@@ -45,8 +45,8 @@ function mergeTenantIntoConfig(
     ...legacy,
     brandName: tenant.site_name || legacy.brandName,
     url: `${proto}://${tenant.subdomain}`,
-    tagline: content.tagline || legacy.tagline,
-    description: content.description || legacy.description,
+    tagline: content.tagline || tenant.site_name || legacy.tagline,
+    description: content.description || content.body?.slice(0, 160) || legacy.description,
     supportBase: content.supportBase || legacy.supportBase,
     supportExtra: content.supportExtra || legacy.supportExtra,
     supportMax: content.supportMax || legacy.supportMax,
@@ -76,7 +76,7 @@ export async function getResolvedSiteConfig(
     hostname = normalizeHostname(hostname);
   }
 
-  const legacy = await getSiteConfig();
+  const legacy = await getLegacySiteConfig();
   const envOverlay = legacyEnvFallback();
   const baseConfig: SiteConfig = {
     ...DEFAULT_SITE_CONFIG,
