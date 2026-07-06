@@ -17,4 +17,4 @@ export function parseKeywordList(input: string): string[] {
   return result;
 }
 
-export const MAX_BULK_KEYWORDS = 50;
+export const MAX_BULK_KEYWORDS = 2000;

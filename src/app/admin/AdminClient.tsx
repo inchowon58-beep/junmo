@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { guidePageUrl } from "@/lib/constants";
+import { MAX_BULK_KEYWORDS } from "@/lib/parse-keywords";
 import RankingHistoryModal from "@/components/RankingHistoryModal";
 
 interface SeoPage {
@@ -35,9 +36,9 @@ interface SeoQuota {
 }
 
 const LIST_PAGE_SIZE = 10;
-const MAX_BULK_KEYWORDS = 50;
 
 type CreateMode = "single" | "bulk" | "file";
+type QueueViewStatus = "pending" | "processing" | "completed" | "failed" | "all";
 
 interface GenerationSummary {
   pending: number;
@@ -63,6 +64,11 @@ export default function AdminClient() {
   const [bulkEnqueueing, setBulkEnqueueing] = useState(false);
   const [generationSummary, setGenerationSummary] = useState<GenerationSummary | null>(null);
   const [recentGenerationJobs, setRecentGenerationJobs] = useState<GenerationJobRow[]>([]);
+  const [queuePendingText, setQueuePendingText] = useState("");
+  const [queueJobs, setQueueJobs] = useState<GenerationJobRow[]>([]);
+  const [queueViewStatus, setQueueViewStatus] = useState<QueueViewStatus>("pending");
+  const [queueSaving, setQueueSaving] = useState(false);
+  const [queueExpanded, setQueueExpanded] = useState(true);
   const [brandName, setBrandName] = useState("");
   const [quota, setQuota] = useState<SeoQuota | null>(null);
   const [loading, setLoading] = useState(false);
@@ -140,6 +146,8 @@ export default function AdminClient() {
         const gen = await generationRes.json();
         setGenerationSummary(gen.summary);
         setRecentGenerationJobs(gen.recent || []);
+        setQueuePendingText(gen.pendingText || "");
+        setQueueJobs(gen.jobs || []);
       }
     } catch {
       setMessage("데이터 로드 실패");
@@ -196,6 +204,18 @@ export default function AdminClient() {
   const pageNumbers = useMemo(() => {
     return Array.from({ length: totalListPages }, (_, i) => i + 1);
   }, [totalListPages]);
+
+  const filteredQueueJobs = useMemo(() => {
+    if (queueViewStatus === "all") return queueJobs;
+    return queueJobs.filter((j) => j.status === queueViewStatus);
+  }, [queueJobs, queueViewStatus]);
+
+  const queueStatusLabel: Record<string, string> = {
+    pending: "대기",
+    processing: "생성중",
+    completed: "완료",
+    failed: "실패",
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,6 +311,48 @@ export default function AdminClient() {
       setMessage("파일을 읽는 중 오류가 발생했습니다.");
     }
     e.target.value = "";
+  };
+
+  const handleDownloadPendingTxt = () => {
+    window.location.href = "/api/admin/generation-queue?download=txt";
+  };
+
+  const handleSavePendingQueue = async () => {
+    if (quota?.service && !quota.service.active) {
+      setMessage("사용 기간이 만료되어 저장할 수 없습니다.");
+      return;
+    }
+    if (
+      !confirm(
+        "대기 중인 키워드 목록을 아래 내용으로 교체합니다. 생성 중·완료·실패 기록은 유지됩니다. 계속할까요?"
+      )
+    ) {
+      return;
+    }
+
+    setQueueSaving(true);
+    setMessage("대기열 저장 중...");
+    try {
+      const res = await fetch("/api/admin/generation-queue", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: queuePendingText }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        let msg = data.message || "대기열을 저장했습니다.";
+        if (data.skippedReasons?.length) {
+          msg += ` (건너뜀 ${data.skipped}건: ${data.skippedReasons.slice(0, 3).join(", ")}${data.skippedReasons.length > 3 ? "…" : ""})`;
+        }
+        setMessage(msg);
+        loadData();
+      } else {
+        setMessage(data.error || "대기열 저장 실패.");
+      }
+    } catch {
+      setMessage("대기열 저장 중 오류가 발생했습니다.");
+    }
+    setQueueSaving(false);
   };
 
   const handleDeletePage = async (id: string) => {
@@ -654,6 +716,162 @@ export default function AdminClient() {
                   {bulkText.length > 500 ? "…" : ""}
                 </pre>
               )}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="font-bold text-dark">VM 생성 대기열 · 키워드 확인</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                대기 중 키워드를 TXT처럼 편집·저장할 수 있습니다. (최대 {MAX_BULK_KEYWORDS}개)
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setQueueExpanded((v) => !v)}
+              className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
+            >
+              {queueExpanded ? "접기" : "펼치기"}
+            </button>
+          </div>
+
+          {queueExpanded && (
+            <div className="space-y-5">
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    대기 중 키워드 ({generationSummary?.pending ?? 0}개)
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={handleDownloadPendingTxt}
+                      className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
+                    >
+                      TXT 다운로드
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void loadData()}
+                      disabled={loading}
+                      className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      새로고침
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSavePendingQueue}
+                      disabled={queueSaving || !serviceActive}
+                      className="text-xs px-3 py-1.5 bg-dark text-white font-bold rounded-lg hover:bg-dark-light disabled:opacity-50"
+                    >
+                      {queueSaving ? "저장 중..." : "대기열 저장"}
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  value={queuePendingText}
+                  onChange={(e) => setQueuePendingText(e.target.value)}
+                  placeholder="대기 중인 키워드가 없습니다. 대량 등록 후 여기에 표시됩니다."
+                  rows={10}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-orange resize-y text-sm font-mono"
+                  disabled={!serviceActive}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  한 줄에 키워드 하나. 편집 후 「대기열 저장」을 누르면 대기(pending) 목록만 교체됩니다.
+                  TXT 다운로드 → 메모장에서 수정 → 붙여넣기 후 저장도 가능합니다.
+                </p>
+              </div>
+
+              <div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {(
+                    [
+                      ["pending", "대기"],
+                      ["processing", "생성중"],
+                      ["completed", "완료"],
+                      ["failed", "실패"],
+                      ["all", "전체"],
+                    ] as const
+                  ).map(([status, label]) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => setQueueViewStatus(status)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition ${
+                        queueViewStatus === status
+                          ? "bg-orange text-white border-orange"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-orange/40"
+                      }`}
+                    >
+                      {label}
+                      {generationSummary && status !== "all" && (
+                        <span className="ml-1 opacity-80">
+                          ({generationSummary[status as keyof GenerationSummary]})
+                        </span>
+                      )}
+                      {generationSummary && status === "all" && (
+                        <span className="ml-1 opacity-80">({generationSummary.total})</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {filteredQueueJobs.length === 0 ? (
+                  <p className="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 rounded-xl">
+                    {queueViewStatus === "pending"
+                      ? "대기 중인 키워드가 없습니다."
+                      : "표시할 항목이 없습니다."}
+                  </p>
+                ) : (
+                  <div className="max-h-64 overflow-auto border border-gray-100 rounded-xl">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600">키워드</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-20">상태</th>
+                          <th className="text-left px-3 py-2 font-medium text-gray-600 w-36">등록일</th>
+                          {queueViewStatus === "failed" || queueViewStatus === "all" ? (
+                            <th className="text-left px-3 py-2 font-medium text-gray-600">메모</th>
+                          ) : null}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredQueueJobs.map((job) => (
+                          <tr key={job.id} className="border-t border-gray-100 hover:bg-gray-50/80">
+                            <td className="px-3 py-2 text-dark">{job.keyword}</td>
+                            <td className="px-3 py-2">
+                              <span
+                                className={`text-xs font-medium ${
+                                  job.status === "pending"
+                                    ? "text-orange"
+                                    : job.status === "processing"
+                                      ? "text-blue-600"
+                                      : job.status === "completed"
+                                        ? "text-[#03C75A]"
+                                        : "text-red-500"
+                                }`}
+                              >
+                                {queueStatusLabel[job.status] || job.status}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-xs text-gray-500">
+                              {job.requestedAt.slice(0, 16).replace("T", " ")}
+                            </td>
+                            {queueViewStatus === "failed" || queueViewStatus === "all" ? (
+                              <td className="px-3 py-2 text-xs text-red-500">{job.error || "-"}</td>
+                            ) : null}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {filteredQueueJobs.length > 0 && (
+                  <p className="text-xs text-gray-400 mt-2">{filteredQueueJobs.length}개 표시</p>
+                )}
+              </div>
             </div>
           )}
         </div>

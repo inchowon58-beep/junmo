@@ -348,3 +348,87 @@ export async function getRecentGenerationJobs(limit = 30): Promise<GenerationJob
     .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))
     .slice(0, limit);
 }
+
+export async function getPendingGenerationKeywords(): Promise<string[]> {
+  const pending = await getPendingGenerationJobsForWorker();
+  return pending.map((j) => j.keyword);
+}
+
+export async function getPendingGenerationKeywordsText(): Promise<string> {
+  const keywords = await getPendingGenerationKeywords();
+  return keywords.join("\n");
+}
+
+export async function getGenerationJobsForAdmin(
+  status: GenerationJobStatus | "all" = "all",
+  limit = 5000
+): Promise<GenerationJob[]> {
+  const queue = await getGenerationQueue();
+  const sorted = [...queue.jobs].sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+  const filtered =
+    status === "all" ? sorted : sorted.filter((j) => j.status === status);
+  return filtered.slice(0, limit);
+}
+
+/** 대기(pending) 작업만 새 목록으로 교체. 생성중·완료·실패는 유지 */
+export async function replacePendingGenerationKeywords(keywords: string[]): Promise<{
+  replaced: number;
+  skipped: number;
+  skippedReasons: string[];
+}> {
+  const queue = await getGenerationQueue();
+  await releaseStaleProcessingJobs(queue);
+
+  queue.jobs = queue.jobs.filter((j) => j.status !== "pending");
+
+  const pages = await getPages();
+  const existingKeys = new Set(pages.map((p) => normalizeKeywordKey(p.keyword)));
+
+  const skippedReasons: string[] = [];
+  let skipped = 0;
+  let replaced = 0;
+  const now = new Date().toISOString();
+  const seenInBatch = new Set<string>();
+
+  for (const raw of keywords) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+
+    const normalized = normalizeSeoKeyword(trimmed);
+    const key = normalizeKeywordKey(normalized);
+
+    if (seenInBatch.has(key)) {
+      skipped++;
+      skippedReasons.push(`${normalized}: 목록 내 중복`);
+      continue;
+    }
+    seenInBatch.add(key);
+
+    if (existingKeys.has(key)) {
+      skipped++;
+      skippedReasons.push(`${normalized}: 이미 생성된 페이지`);
+      continue;
+    }
+
+    if (hasActiveJobForKeyword(queue.jobs, key)) {
+      skipped++;
+      skippedReasons.push(`${normalized}: 생성 중인 작업과 중복`);
+      continue;
+    }
+
+    queue.jobs.push({
+      id: `gen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      keyword: trimmed,
+      normalizedKeyword: key,
+      status: "pending",
+      requestedAt: now,
+    });
+    replaced++;
+    existingKeys.add(key);
+  }
+
+  queue.updatedAt = now;
+  await saveGenerationQueue(queue);
+
+  return { replaced, skipped, skippedReasons };
+}
