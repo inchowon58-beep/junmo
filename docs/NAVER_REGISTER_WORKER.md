@@ -55,6 +55,7 @@ VM: 네이버 소유확인 클릭
 
 POST .../api/naver-register-worker?action=complete
   → job completed
+  → site_configs.naver_site_registered_at 저장 → 관리자 목록에 「등록완료」 표시
 ```
 
 이후 SEO 페이지 발행 시 기존 **collection-worker**가 웹문서 수집 요청을 처리합니다.
@@ -115,6 +116,10 @@ POST /api/naver-register-worker?action=complete
   "message": "소유확인 완료"
 }
 ```
+
+- `success: true` 시 서버가 `site_configs.naver_site_registered_at` 을 기록합니다.
+- 관리자 `/admin/sites` 목록에 **네이버 · 등록완료** 버튼이 표시됩니다.
+- 메타값만 있고 소유확인 전이면 **등록 대기**로 표시됩니다.
 
 ---
 

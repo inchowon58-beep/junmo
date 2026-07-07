@@ -305,6 +305,7 @@ export async function POST(req: NextRequest) {
       naver_verification: naverVerification || null,
       slack_webhook: slackWebhook || null,
       naver_account_id: linkedNaverAccountId,
+      naver_site_registered_at: null,
       daily_seo_limit: dailySeoLimit,
       seo_quota_date: null,
       seo_quota_count: 0,

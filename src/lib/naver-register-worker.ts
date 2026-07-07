@@ -144,12 +144,20 @@ export async function completeNaverRegisterJob(input: {
     throw new Error("네이버 아이디가 일치하지 않습니다.");
   }
 
+  const completedAt = new Date().toISOString();
+
   const updated = await updateNaverRegisterJob(job.id, {
     status: input.success ? "completed" : "failed",
-    completed_at: new Date().toISOString(),
+    completed_at: completedAt,
     error: input.success ? null : input.message || "VM 등록 실패",
     claimed_by: input.vmId,
   });
+
+  if (input.success) {
+    await updateTenantSiteConfig(job.site_config_id, {
+      naver_site_registered_at: completedAt,
+    });
+  }
 
   return jobToPayload(updated);
 }

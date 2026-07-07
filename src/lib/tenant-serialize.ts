@@ -20,6 +20,8 @@ export function toTenantSiteSummary(row: TenantSiteConfigRow): TenantSiteSummary
     createdAt: row.created_at,
     hasSlackWebhook: !!row.slack_webhook?.trim(),
     hasNaverVerification: !!row.naver_verification?.trim(),
+    hasNaverAccount: !!row.naver_account_id,
+    naverSiteRegistered: !!row.naver_site_registered_at,
     dailySeoLimit: row.daily_seo_limit,
     designVariant: content.designVariant || null,
   };

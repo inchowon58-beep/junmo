@@ -53,6 +53,8 @@ export interface TenantSiteConfigRow {
   naver_verification: string | null;
   slack_webhook: string | null;
   naver_account_id: string | null;
+  /** VM 소유확인 완료 시각 */
+  naver_site_registered_at: string | null;
   daily_seo_limit: number | null;
   seo_quota_date: string | null;
   seo_quota_count: number;
@@ -100,7 +102,12 @@ export interface TenantSiteSummary {
   siteUrl: string;
   createdAt: string;
   hasSlackWebhook: boolean;
+  /** 메타값 설정 여부 (수정 화면용) */
   hasNaverVerification: boolean;
+  /** VM 자동 등록용 네이버 계정 연결 여부 */
+  hasNaverAccount: boolean;
+  /** VM이 네이버 서치어드바이저 등록·소유확인 완료 */
+  naverSiteRegistered: boolean;
   dailySeoLimit: number | null;
   designVariant: string | null;
 }

@@ -27,6 +27,35 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
+function NaverIntegrationBadges({
+  hasNaverAccount,
+  naverSiteRegistered,
+}: {
+  hasNaverAccount: boolean;
+  naverSiteRegistered: boolean;
+}) {
+  if (!hasNaverAccount && !naverSiteRegistered) {
+    return <span className="text-xs text-gray-300">—</span>;
+  }
+
+  return (
+    <div className="inline-flex flex-wrap items-center gap-1.5">
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#03c75a]/10 text-[#03a94d]">
+        네이버
+      </span>
+      {naverSiteRegistered ? (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm">
+          등록완료
+        </span>
+      ) : (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+          등록 대기
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function TenantSitesClient() {
   const [sites, setSites] = useState<TenantSiteSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +212,10 @@ export default function TenantSitesClient() {
                       <td className="px-4 py-4 hidden md:table-cell">
                         <div className="flex flex-wrap gap-1.5">
                           <StatusBadge ok={site.hasSlackWebhook} label="Slack" />
-                          <StatusBadge ok={site.hasNaverVerification} label="네이버" />
+                          <NaverIntegrationBadges
+                            hasNaverAccount={site.hasNaverAccount}
+                            naverSiteRegistered={site.naverSiteRegistered}
+                          />
                         </div>
                       </td>
                       <td className="px-4 py-4 hidden lg:table-cell text-gray-500 text-xs whitespace-nowrap">
@@ -225,7 +257,7 @@ export default function TenantSitesClient() {
 
         {!loading && sites.length > 0 && (
           <p className="text-center text-xs text-gray-400 mt-6">
-            총 {sites.length}개 사이트 · Slack·네이버 설정은 각 사이트 「수정」에서 추가할 수 있습니다.
+            총 {sites.length}개 사이트 · 네이버 「등록완료」는 VM 소유확인 후 표시됩니다.
           </p>
         )}
       </div>
