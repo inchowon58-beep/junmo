@@ -248,3 +248,62 @@ body.home-b-root .home-b-card {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+/* C 디자인 — agapetstory.co.kr 스타일 (home-c 컴포넌트) */
+body.home-c-root {
+  background-color: #faf8f5;
+  color: #1c1917;
+}
+
+body.home-c-root .home-c-editorial {
+  font-feature-settings: "ss01", "liga";
+  letter-spacing: -0.02em;
+}
+
+body.home-c-root .home-c-card {
+  transition: transform 0.3s ease;
+}
+
+body.home-c-root .home-c-strip-item {
+  box-shadow: 0 4px 24px rgba(28, 25, 23, 0.08);
+}
+
+body.home-c-root .home-c-fixed-bar {
+  backdrop-filter: blur(8px);
+}
+
+body.home-c-root .scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body.home-c-root .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* D 디자인 — mainecoon.cattery.co.kr 스타일 (home-d 컴포넌트) */
+body.home-d-root {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+body.home-d-root .home-d-display {
+  font-feature-settings: "ss01", "liga";
+  letter-spacing: -0.01em;
+}
+
+body.home-d-root .home-d-hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--dark) 55%, transparent),
+    color-mix(in srgb, var(--dark) 85%, transparent)
+  );
+}
+
+body.home-d-root .home-d-card {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+body.home-d-root .home-d-fixed-bar {
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+}
+

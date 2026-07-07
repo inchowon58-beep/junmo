@@ -2,15 +2,22 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import HeaderB from "@/components/home-b/HeaderB";
+import HeaderC from "@/components/home-c/HeaderC";
 import FooterWrapper from "@/components/FooterWrapper";
 import FooterB from "@/components/home-b/FooterB";
+import FooterC from "@/components/home-c/FooterC";
 import FixedContactBar from "@/components/FixedContactBar";
 import FixedContactBarB from "@/components/home-b/FixedContactBarB";
+import FixedContactBarC from "@/components/home-c/FixedContactBarC";
+import HeaderD from "@/components/home-d/HeaderD";
+import FooterD from "@/components/home-d/FooterD";
+import FixedContactBarD from "@/components/home-d/FixedContactBarD";
 import TenantThemeStyles from "@/components/TenantThemeStyles";
 import { SiteConfigProvider } from "@/components/SiteConfigProvider";
 import { getResolvedSiteConfig } from "@/utils/siteConfig";
 import { buildSiteMetadata } from "@/lib/metadata";
 import { NAVER_SITE_VERIFICATION } from "@/lib/constants";
+import { parseSiteDesignId } from "@/lib/site-designs";
 import { showCompanyContact } from "@/lib/exposure-mode";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,14 +49,19 @@ export default async function RootLayout({
   const naverVerification =
     tenant?.naver_verification?.trim() || NAVER_SITE_VERIFICATION;
   const headerStyle = tenantUi?.headerStyle || "sticky";
-  const siteDesign = tenantUi?.siteDesign === "b" ? "b" : "a";
+  const siteDesign = parseSiteDesignId(tenantUi?.siteDesign);
   const isDesignB = siteDesign === "b";
+  const isDesignC = siteDesign === "c";
+  const isDesignD = siteDesign === "d";
+  const isAltDesign = isDesignB || isDesignC || isDesignD;
   const bodyClasses = [
     "antialiased",
     `tenant-design-${siteDesign}`,
     isDesignB ? "home-b-root" : "",
-    !isDesignB && tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
-    !isDesignB && headerStyle === "overlay" ? "tenant-header-overlay" : "",
+    isDesignC ? "home-c-root" : "",
+    isDesignD ? "home-d-root" : "",
+    !isAltDesign && tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
+    !isAltDesign && headerStyle === "overlay" ? "tenant-header-overlay" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -113,7 +125,21 @@ export default async function RootLayout({
       </head>
       <body className={`${bodyClasses} min-h-screen flex flex-col`}>
         <SiteConfigProvider config={config} tenantUi={tenantUi}>
-          {isDesignB ? (
+          {isDesignD ? (
+            <>
+              <HeaderD />
+              <main className="flex-1">{children}</main>
+              <FooterD />
+              <FixedContactBarD />
+            </>
+          ) : isDesignC ? (
+            <>
+              <HeaderC />
+              <main className="flex-1">{children}</main>
+              <FooterC />
+              <FixedContactBarC />
+            </>
+          ) : isDesignB ? (
             <>
               <HeaderB />
               <main className="flex-1">{children}</main>

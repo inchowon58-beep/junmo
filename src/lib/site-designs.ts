@@ -10,6 +10,16 @@ export const SITE_DESIGN_OPTIONS = [
     label: "B 디자인",
     description: "cleneo 스타일 · 상단 띠배너 · 센터 히어로 · 사업영역·FAQ·폐업지원금",
   },
+  {
+    id: "c",
+    label: "C 디자인",
+    description: "agapet 스타일 · 에디토리얼 히어로 · 크림 톤 · 약속·스토리·시공사례",
+  },
+  {
+    id: "d",
+    label: "D 디자인",
+    description: "mainecoon 스타일 · 프리미엄 히어로 · 서비스·가이드·갤러리·FAQ",
+  },
 ] as const;
 
 export type SiteDesignId = (typeof SITE_DESIGN_OPTIONS)[number]["id"];

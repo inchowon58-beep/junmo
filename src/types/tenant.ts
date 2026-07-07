@@ -19,8 +19,8 @@ export interface TenantContentData {
   exposureMode?: "cpa" | "company";
   /** classic | modern | bold */
   designVariant?: "classic" | "modern" | "bold";
-  /** 사이트 상위 디자인 템플릿: a=기본, b=대안 */
-  siteDesign?: "a" | "b";
+  /** 사이트 상위 디자인 템플릿: a=기본, b=cleneo, c=agapet, d=mainecoon */
+  siteDesign?: "a" | "b" | "c" | "d";
   /** 생성 시 고정 난수 시드 — 레이아웃·이미지 재현용 */
   layoutSeed?: number;
   headerStyle?: "sticky" | "overlay" | "minimal" | "hidden";
@@ -53,6 +53,17 @@ export interface TenantContentData {
   businessAreas?: { title: string; description: string; tags: string[]; imageIndex: number }[];
   faqItems?: { question: string; answer: string }[];
   statsGrid?: { label: string; value: string; suffix: string }[];
+  /** C 디자인 — 에디토리얼 히어로 줄 */
+  heroLines?: string[];
+  missionLines?: string[];
+  missionBody?: string;
+  storyTitle?: string[];
+  promises?: { num: string; title: string; description: string }[];
+  /** D 디자인 — 프리미엄 캐터리 스타일 */
+  heroEyebrow?: string;
+  serviceCards?: { title: string; englishLabel: string; description: string; imageIndex: number }[];
+  guideItems?: { title: string; subtitle: string; description: string }[];
+  regionLinks?: string[];
 }
 
 export interface TenantSiteConfigRow {
@@ -83,8 +94,8 @@ export interface CreateSiteInput {
   dailySeoLimit?: number | string;
   /** VM 네이버 등록용 계정 */
   naverAccountId?: string;
-  /** a | b — 미입력 시 A 디자인 */
-  siteDesign?: "a" | "b";
+  /** a | b | c — 미입력 시 A 디자인 */
+  siteDesign?: "a" | "b" | "c" | "d";
 }
 
 export interface NaverAccountSummary {
@@ -106,7 +117,7 @@ export interface CreateSiteResult {
   error?: string;
   vercelDomain?: { name: string; verified?: boolean };
   naverRegisterQueued?: boolean;
-  siteDesign?: "a" | "b";
+  siteDesign?: "a" | "b" | "c" | "d";
 }
 
 export interface TenantSiteSummary {
@@ -122,7 +133,7 @@ export interface TenantSiteSummary {
   hasNaverAccount: boolean;
   /** VM이 네이버 서치어드바이저 등록·소유확인 완료 */
   naverSiteRegistered: boolean;
-  siteDesign: "a" | "b";
+  siteDesign: "a" | "b" | "c" | "d";
   dailySeoLimit: number | null;
   designVariant: string | null;
 }

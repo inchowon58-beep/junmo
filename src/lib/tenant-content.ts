@@ -1,6 +1,8 @@
 import type { TenantContentData } from "@/types/tenant";
 import { type SiteDesignId, DEFAULT_SITE_DESIGN } from "@/lib/site-designs";
 import { pickDesignBExtras } from "@/lib/tenant-content-b";
+import { pickDesignCExtras } from "@/lib/tenant-content-c";
+import { pickDesignDExtras } from "@/lib/tenant-content-d";
 
 export type DesignVariant = "classic" | "modern" | "bold";
 export type HeaderStyle = "sticky" | "overlay" | "minimal" | "hidden";
@@ -337,10 +339,20 @@ export function pickTenantContentPackage(
   imageCount = 20,
   siteDesign: SiteDesignId = DEFAULT_SITE_DESIGN
 ): TenantContentData {
-  const designSeed = siteDesign === "b" ? `${seed}:design-b` : seed;
+  const designSeed =
+    siteDesign === "b"
+      ? `${seed}:design-b`
+      : siteDesign === "c"
+        ? `${seed}:design-c`
+        : siteDesign === "d"
+          ? `${seed}:design-d`
+          : seed;
   const layoutSeed = hashString(designSeed);
   const rng = createRng(layoutSeed);
   const isDesignB = siteDesign === "b";
+  const isDesignC = siteDesign === "c";
+  const isDesignD = siteDesign === "d";
+  const isAltDesign = isDesignB || isDesignC || isDesignD;
   const maxImages = Math.max(4, imageCount);
   const region = extractRegion(keywords, siteName);
   const firstKeyword = keywords.split(/[,\n]/)[0]?.trim() || siteName;
@@ -355,9 +367,9 @@ export function pickTenantContentPackage(
   const base: TenantContentData = {
     siteDesign,
     layoutSeed,
-    headerStyle: pickOne(isDesignB ? HEADER_STYLES_B : HEADER_STYLES, rng),
-    sectionOrder: isDesignB ? [] : pickSectionOrder(rng),
-    designVariant: pickOne(isDesignB ? DESIGN_VARIANTS_B : DESIGN_VARIANTS, rng),
+    headerStyle: pickOne(isAltDesign ? HEADER_STYLES_B : HEADER_STYLES, rng),
+    sectionOrder: isAltDesign ? [] : pickSectionOrder(rng),
+    designVariant: pickOne(isAltDesign ? DESIGN_VARIANTS_B : DESIGN_VARIANTS, rng),
     heroBadge: pickOne(HERO_BADGES, rng),
     heroIntro: intro,
     heroClosing: closing,
@@ -385,6 +397,32 @@ export function pickTenantContentPackage(
   if (isDesignB) {
     const bExtras = pickDesignBExtras(rng, region, siteName, firstKeyword, maxImages);
     return { ...base, ...bExtras };
+  }
+
+  if (isDesignC) {
+    const casesItems = base.casesItems || [];
+    const cExtras = pickDesignCExtras(
+      rng,
+      region,
+      siteName,
+      firstKeyword,
+      maxImages,
+      casesItems
+    );
+    return { ...base, ...cExtras };
+  }
+
+  if (isDesignD) {
+    const casesItems = base.casesItems || [];
+    const dExtras = pickDesignDExtras(
+      rng,
+      region,
+      siteName,
+      firstKeyword,
+      maxImages,
+      casesItems
+    );
+    return { ...base, ...dExtras };
   }
 
   return {
