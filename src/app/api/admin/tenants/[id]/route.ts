@@ -4,6 +4,7 @@ import {
   fetchTenantById,
   getSupabaseConfigError,
   updateTenantSiteConfig,
+  deleteTenantSiteConfig,
 } from "@/lib/supabase/tenant-db";
 import { toTenantSiteDetail } from "@/lib/tenant-serialize";
 import type { TenantContentData, UpdateTenantSiteInput } from "@/types/tenant";
@@ -121,5 +122,31 @@ export async function PATCH(req: NextRequest, context: RouteContext) {
       { error: error instanceof Error ? error.message : "저장 실패" },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(_req: NextRequest, context: RouteContext) {
+  if (!(await isAuthenticated()) || !(await isMasterAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    return NextResponse.json({ error: configError }, { status: 503 });
+  }
+
+  const { id } = await context.params;
+
+  try {
+    const deleted = await deleteTenantSiteConfig(id);
+    return NextResponse.json({
+      success: true,
+      message: `${deleted.siteName} (${deleted.subdomain}) 사이트가 목록에서 삭제되었습니다.`,
+      subdomain: deleted.subdomain,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "삭제 실패";
+    const status = message.includes("찾을 수 없습니다") ? 404 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

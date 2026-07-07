@@ -170,6 +170,34 @@ export async function updateTenantSiteConfig(
   return data as TenantSiteConfigRow;
 }
 
+export async function deleteTenantSiteConfig(id: string): Promise<{
+  siteName: string;
+  subdomain: string;
+}> {
+  const configError = getSupabaseConfigError();
+  if (configError) {
+    throw new Error(configError);
+  }
+
+  const existing = await fetchTenantById(id);
+  if (!existing) {
+    throw new Error("사이트를 찾을 수 없습니다.");
+  }
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    throw new Error("Supabase 클라이언트를 초기화할 수 없습니다.");
+  }
+
+  const { error } = await supabase.from("site_configs").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(`Supabase 삭제 실패: ${error.message}`);
+  }
+
+  return { siteName: existing.site_name, subdomain: existing.subdomain };
+}
+
 export async function isSubdomainTaken(subdomain: string): Promise<boolean> {
   const supabase = getSupabaseAdmin();
   if (!supabase) {

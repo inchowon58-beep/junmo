@@ -31,31 +31,63 @@ export default function TenantSitesClient() {
   const [sites, setSites] = useState<TenantSiteSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function loadSites() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/tenants", { cache: "no-store" });
+      if (res.status === 401) {
+        window.location.href = "/admin/master";
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "목록을 불러오지 못했습니다.");
+        return;
+      }
+      setSites(Array.isArray(data.sites) ? data.sites : []);
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await fetch("/api/admin/tenants", { cache: "no-store" });
-        if (res.status === 401) {
-          window.location.href = "/admin/master";
-          return;
-        }
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setError(data.error || "목록을 불러오지 못했습니다.");
-          return;
-        }
-        setSites(Array.isArray(data.sites) ? data.sites : []);
-      } catch {
-        setError("네트워크 오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    void load();
+    void loadSites();
   }, []);
+
+  async function handleDelete(site: TenantSiteSummary) {
+    const confirmed = window.confirm(
+      `「${site.siteName}」(${site.subdomain})을(를) 등록 목록에서 삭제할까요?\n\n` +
+        "· Supabase 사이트 설정·SEO 페이지·대기열이 함께 삭제됩니다.\n" +
+        "· Vercel 도메인 연결은 별도입니다. (이미 해제했다면 무시)\n" +
+        "· 같은 서브도메인으로 다시 등록할 수 있습니다."
+    );
+    if (!confirmed) return;
+
+    setDeletingId(site.id);
+    setMessage("");
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/tenants/${site.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "삭제에 실패했습니다.");
+        return;
+      }
+      setSites((prev) => prev.filter((s) => s.id !== site.id));
+      setMessage(data.message || "삭제되었습니다.");
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange/5 py-10 px-4">
@@ -67,7 +99,8 @@ export default function TenantSitesClient() {
             </p>
             <h1 className="text-2xl sm:text-3xl font-bold text-dark">등록 사이트 목록</h1>
             <p className="text-sm text-gray-500 mt-2">
-              Supabase에 등록된 서브도메인 사이트를 확인하고 Slack·네이버 소유확인 설정을 수정합니다.
+              Supabase에 등록된 서브도메인 사이트를 확인·수정·삭제합니다.
+              Vercel에서 도메인을 해제해도 여기 목록은 남으므로, 필요 시 삭제하세요.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 text-sm shrink-0">
@@ -85,6 +118,12 @@ export default function TenantSitesClient() {
             </Link>
           </div>
         </div>
+
+        {message && (
+          <p className="mb-4 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+            {message}
+          </p>
+        )}
 
         {error && (
           <p className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
@@ -166,6 +205,14 @@ export default function TenantSitesClient() {
                           >
                             관리자
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(site)}
+                            disabled={deletingId === site.id}
+                            className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition disabled:opacity-50"
+                          >
+                            {deletingId === site.id ? "삭제 중..." : "삭제"}
+                          </button>
                         </div>
                       </td>
                     </tr>
