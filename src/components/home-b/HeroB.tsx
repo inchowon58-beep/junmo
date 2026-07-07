@@ -1,0 +1,91 @@
+import Image from "next/image";
+import Link from "next/link";
+import { getSiteConfig, phoneToTel } from "@/lib/site-config";
+import { getImageUrl } from "@/lib/site-images";
+import { INQUIRY_SECTION_ID, inquiryAccentButtonClass, showCompanyContact } from "@/lib/exposure-mode";
+import { getResolvedSiteConfig } from "@/utils/siteConfig";
+import { getDefaultStats } from "@/lib/tenant-content";
+
+export default async function HeroB() {
+  const site = await getSiteConfig();
+  const showCompany = showCompanyContact(site.exposureMode);
+  const { tenantUi } = await getResolvedSiteConfig();
+  const keyword = tenantUi?.heroKeyword || site.tagline?.split(" ")[0] || "철거";
+  const subline = tenantUi?.heroSubline || `철거·폐기물처리 전문 · ${site.brandName}`;
+  const stats = tenantUi?.stats?.length ? tenantUi.stats : getDefaultStats();
+  const badges = tenantUi?.trustBadges || [];
+
+  return (
+    <section className="home-b-hero relative min-h-[88vh] flex items-center overflow-hidden">
+      <Image
+        src={getImageUrl(tenantUi?.heroImageIndex || 1, site)}
+        alt={`${site.brandName} 철거 전문`}
+        fill
+        className="object-cover"
+        priority
+      />
+      <div className="home-b-hero-overlay absolute inset-0" />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center w-full">
+        <p className="text-sm text-orange font-semibold mb-4 tracking-wide">
+          서울 · 경기도 · 인천 무료 출장 견적
+        </p>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
+          {keyword}
+          <br />
+          <span className="text-orange">{site.brandName}</span>가
+          <br />
+          완전히 해결합니다
+        </h1>
+        <p className="text-sm sm:text-base text-gray-200 font-medium mb-3">{subline}</p>
+        <p className="text-sm text-gray-300 leading-relaxed max-w-2xl mx-auto mb-8">
+          {tenantUi?.aboutText || site.description}
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          <Link
+            href={`/#${INQUIRY_SECTION_ID}`}
+            className={`inline-flex items-center gap-2 font-bold px-8 py-4 rounded-lg transition shadow-lg text-base ${inquiryAccentButtonClass(site.exposureMode)}`}
+          >
+            무료 견적 신청
+          </Link>
+          {showCompany && (
+            <a
+              href={`tel:${phoneToTel(site.phone)}`}
+              className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/30 font-bold px-8 py-4 rounded-lg hover:bg-white/20 transition text-base"
+            >
+              바로 전화하기
+            </a>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="home-b-hero-stat rounded-xl bg-white/10 backdrop-blur border border-white/10 py-3 px-2">
+              <p className="text-xl sm:text-2xl font-black text-orange">
+                {stat.value}
+                <span className="text-sm text-white/80">{stat.suffix}</span>
+              </p>
+              <p className="text-[10px] sm:text-xs text-gray-300 mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {badges.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2">
+            {badges.map((badge) => (
+              <span
+                key={badge}
+                className="text-[10px] sm:text-xs px-3 py-1.5 rounded-full bg-white/10 text-gray-100 border border-white/10"
+              >
+                {badge}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-8 text-xs text-gray-400 tracking-widest">SCROLL</p>
+      </div>
+    </section>
+  );
+}

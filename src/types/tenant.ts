@@ -44,6 +44,15 @@ export interface TenantContentData {
   stats?: { label: string; value: string; suffix: string }[];
   casesCount?: number;
   casesItems?: { id: string; title: string; type: string; imageIndex: number }[];
+  /** B 디자인 전용 */
+  heroKeyword?: string;
+  heroSubline?: string;
+  trustBadges?: string[];
+  marqueeLines?: string[];
+  aboutFeatures?: { icon: string; title: string; description: string }[];
+  businessAreas?: { title: string; description: string; tags: string[]; imageIndex: number }[];
+  faqItems?: { question: string; answer: string }[];
+  statsGrid?: { label: string; value: string; suffix: string }[];
 }
 
 export interface TenantSiteConfigRow {

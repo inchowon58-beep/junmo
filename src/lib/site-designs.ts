@@ -15,13 +15,13 @@ export const SITE_DESIGN_OPTIONS = [
   {
     id: "b",
     label: "B 디자인",
-    description: "센터 히어로 · 카드형 통계 · 시공사례·지원 우선 배치",
+    description: "cleneo 스타일 · 상단 띠배너 · 센터 히어로 · 사업영역·FAQ·폐업지원금",
     preview: {
       heroAlign: "center" as const,
       headerStyle: "minimal" as const,
       statsStyle: "cards" as const,
-      sectionOrder: ["시공", "지원", "통계", "강점", "절차", "후기", "문의"],
-      features: ["센터 정렬 히어로", "카드형 통계", "시공·지원 우선", "modern/bold 변형"],
+      sectionOrder: ["소개", "사업영역", "절차", "선택이유", "지원금", "시공", "후기", "FAQ"],
+      features: ["상단 마퀴", "5단계 절차", "사업영역 카드", "FAQ 아코디언", "폐업지원금 박스"],
     },
   },
 ] as const;

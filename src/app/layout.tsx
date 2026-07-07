@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
+import HeaderB from "@/components/home-b/HeaderB";
 import FooterWrapper from "@/components/FooterWrapper";
+import FooterB from "@/components/home-b/FooterB";
 import FixedContactBar from "@/components/FixedContactBar";
+import FixedContactBarB from "@/components/home-b/FixedContactBarB";
 import TenantThemeStyles from "@/components/TenantThemeStyles";
 import { SiteConfigProvider } from "@/components/SiteConfigProvider";
 import { getResolvedSiteConfig } from "@/utils/siteConfig";
@@ -40,11 +43,13 @@ export default async function RootLayout({
     tenant?.naver_verification?.trim() || NAVER_SITE_VERIFICATION;
   const headerStyle = tenantUi?.headerStyle || "sticky";
   const siteDesign = tenantUi?.siteDesign === "b" ? "b" : "a";
+  const isDesignB = siteDesign === "b";
   const bodyClasses = [
     "antialiased",
     `tenant-design-${siteDesign}`,
-    tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
-    headerStyle === "overlay" ? "tenant-header-overlay" : "",
+    isDesignB ? "home-b-root" : "",
+    !isDesignB && tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
+    !isDesignB && headerStyle === "overlay" ? "tenant-header-overlay" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -108,10 +113,21 @@ export default async function RootLayout({
       </head>
       <body className={`${bodyClasses} min-h-screen flex flex-col`}>
         <SiteConfigProvider config={config} tenantUi={tenantUi}>
-          {headerStyle !== "hidden" && <Header headerStyle={headerStyle} />}
-          <main className="flex-1 pb-24">{children}</main>
-          <FooterWrapper />
-          <FixedContactBar />
+          {isDesignB ? (
+            <>
+              <HeaderB />
+              <main className="flex-1">{children}</main>
+              <FooterB />
+              <FixedContactBarB />
+            </>
+          ) : (
+            <>
+              {headerStyle !== "hidden" && <Header headerStyle={headerStyle} />}
+              <main className="flex-1 pb-24">{children}</main>
+              <FooterWrapper />
+              <FixedContactBar />
+            </>
+          )}
         </SiteConfigProvider>
       </body>
     </html>

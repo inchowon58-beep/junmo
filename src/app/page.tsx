@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import HomeSections, { HomeLeadBlocks } from "@/components/HomeSections";
+import HomePageB from "@/components/home-b/HomePageB";
 import { getSiteConfig } from "@/lib/site-config";
 import { buildPageMetadata } from "@/lib/metadata";
+import { getResolvedSiteConfig } from "@/utils/siteConfig";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
@@ -13,7 +15,13 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { tenantUi } = await getResolvedSiteConfig();
+
+  if (tenantUi?.siteDesign === "b") {
+    return <HomePageB />;
+  }
+
   return (
     <>
       <HomeLeadBlocks />

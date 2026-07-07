@@ -1,5 +1,6 @@
 import type { TenantContentData } from "@/types/tenant";
 import { type SiteDesignId, DEFAULT_SITE_DESIGN } from "@/lib/site-designs";
+import { pickDesignBExtras } from "@/lib/tenant-content-b";
 
 export type DesignVariant = "classic" | "modern" | "bold";
 export type HeaderStyle = "sticky" | "overlay" | "minimal" | "hidden";
@@ -327,16 +328,6 @@ function pickSectionOrder(rng: () => number): HomeSectionId[] {
   return core;
 }
 
-const SECTION_ORDER_B_POOL: HomeSectionId[][] = [
-  ["cases", "support", "stats", "whyUs", "process", "reviews", "inquiry", "partner", "cta"],
-  ["support", "cases", "whyUs", "stats", "process", "inquiry", "reviews", "cta", "partner"],
-  ["cases", "whyUs", "support", "process", "stats", "reviews", "inquiry", "cta"],
-];
-
-function pickSectionOrderB(rng: () => number): HomeSectionId[] {
-  return pickOne(SECTION_ORDER_B_POOL, rng);
-}
-
 /** 서브도메인 시드로 사이트마다 다른 문구·레이아웃·이미지 패키지 생성 */
 export function pickTenantContentPackage(
   seed: string,
@@ -361,11 +352,11 @@ export function pickTenantContentPackage(
   const supportImageIndex = Math.floor(rng() * maxImages) + 1;
   const reviews = shuffle(REVIEW_POOL, rng).slice(0, 4 + Math.floor(rng() * 3));
 
-  return {
+  const base: TenantContentData = {
     siteDesign,
     layoutSeed,
     headerStyle: pickOne(isDesignB ? HEADER_STYLES_B : HEADER_STYLES, rng),
-    sectionOrder: isDesignB ? pickSectionOrderB(rng) : pickSectionOrder(rng),
+    sectionOrder: isDesignB ? [] : pickSectionOrder(rng),
     designVariant: pickOne(isDesignB ? DESIGN_VARIANTS_B : DESIGN_VARIANTS, rng),
     heroBadge: pickOne(HERO_BADGES, rng),
     heroIntro: intro,
@@ -389,6 +380,16 @@ export function pickTenantContentPackage(
     description: about.slice(0, 160) || `${siteName} 공식 사이트`,
     keywords,
     body: bodyContent || about,
+  };
+
+  if (isDesignB) {
+    const bExtras = pickDesignBExtras(rng, region, siteName, firstKeyword, maxImages);
+    return { ...base, ...bExtras };
+  }
+
+  return {
+    ...base,
+    sectionOrder: pickSectionOrder(rng),
   };
 }
 
