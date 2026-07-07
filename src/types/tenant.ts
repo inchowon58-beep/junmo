@@ -19,6 +19,8 @@ export interface TenantContentData {
   exposureMode?: "cpa" | "company";
   /** classic | modern | bold */
   designVariant?: "classic" | "modern" | "bold";
+  /** 사이트 상위 디자인 템플릿: a=기본, b=대안 */
+  siteDesign?: "a" | "b";
   /** 생성 시 고정 난수 시드 — 레이아웃·이미지 재현용 */
   layoutSeed?: number;
   headerStyle?: "sticky" | "overlay" | "minimal" | "hidden";
@@ -72,6 +74,8 @@ export interface CreateSiteInput {
   dailySeoLimit?: number | string;
   /** VM 네이버 등록용 계정 */
   naverAccountId?: string;
+  /** a | b — 미입력 시 A 디자인 */
+  siteDesign?: "a" | "b";
 }
 
 export interface NaverAccountSummary {
@@ -93,6 +97,7 @@ export interface CreateSiteResult {
   error?: string;
   vercelDomain?: { name: string; verified?: boolean };
   naverRegisterQueued?: boolean;
+  siteDesign?: "a" | "b";
 }
 
 export interface TenantSiteSummary {
@@ -108,6 +113,7 @@ export interface TenantSiteSummary {
   hasNaverAccount: boolean;
   /** VM이 네이버 서치어드바이저 등록·소유확인 완료 */
   naverSiteRegistered: boolean;
+  siteDesign: "a" | "b";
   dailySeoLimit: number | null;
   designVariant: string | null;
 }

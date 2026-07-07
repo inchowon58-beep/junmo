@@ -1,6 +1,7 @@
 "use client";
 
 import type { CreateSiteResult, NaverAccountSummary } from "@/types/tenant";
+import { SITE_DESIGN_OPTIONS } from "@/lib/site-designs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -13,6 +14,7 @@ export default function RegisterSiteClient() {
   const [naverVerification, setNaverVerification] = useState("");
   const [dailySeoLimit, setDailySeoLimit] = useState("");
   const [naverAccountId, setNaverAccountId] = useState("");
+  const [siteDesign, setSiteDesign] = useState<"a" | "b">("a");
   const [naverAccounts, setNaverAccounts] = useState<NaverAccountSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,6 +53,7 @@ export default function RegisterSiteClient() {
           slackWebhook,
           naverVerification: naverAccountId ? "" : naverVerification,
           naverAccountId: naverAccountId || undefined,
+          siteDesign,
           ...(dailySeoLimit.trim() ? { dailySeoLimit: dailySeoLimit.trim() } : {}),
         }),
       });
@@ -152,6 +155,7 @@ export default function RegisterSiteClient() {
                 setNaverVerification("");
                 setDailySeoLimit("");
                 setNaverAccountId("");
+                setSiteDesign("a");
               }}
               className="mt-6 text-sm text-gray-500 hover:text-orange"
             >
@@ -210,6 +214,33 @@ export default function RegisterSiteClient() {
                 rows={6}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange resize-y text-sm"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">사이트 디자인</label>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {SITE_DESIGN_OPTIONS.map((option) => {
+                  const selected = siteDesign === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setSiteDesign(option.id)}
+                      className={`text-left p-4 rounded-xl border-2 transition ${
+                        selected
+                          ? "border-orange bg-orange/5 shadow-sm"
+                          : "border-gray-200 hover:border-orange/40"
+                      }`}
+                    >
+                      <p className="font-bold text-dark text-sm">{option.label}</p>
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                선택한 디자인 기준으로 레이아웃·섹션 순서·문구 변형이 생성됩니다.
+              </p>
             </div>
 
             <div>

@@ -39,8 +39,10 @@ export default async function RootLayout({
   const naverVerification =
     tenant?.naver_verification?.trim() || NAVER_SITE_VERIFICATION;
   const headerStyle = tenantUi?.headerStyle || "sticky";
+  const siteDesign = tenantUi?.siteDesign === "b" ? "b" : "a";
   const bodyClasses = [
     "antialiased",
+    `tenant-design-${siteDesign}`,
     tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
     headerStyle === "overlay" ? "tenant-header-overlay" : "",
   ]

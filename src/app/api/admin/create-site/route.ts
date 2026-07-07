@@ -14,6 +14,7 @@ import { getSettings } from "@/lib/data";
 import { resolveDailySeoLimit } from "@/lib/seo-quota";
 import { fetchNaverAccountById } from "@/lib/supabase/naver-accounts";
 import { enqueueNaverSiteRegistration } from "@/lib/naver-register-worker";
+import { parseSiteDesignId, siteDesignLabel } from "@/lib/site-designs";
 import type { CreateSiteInput, TenantContentData } from "@/types/tenant";
 
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
@@ -243,6 +244,7 @@ export async function POST(req: NextRequest) {
   const slackWebhook = String(body.slackWebhook || "").trim();
   const naverVerification = String(body.naverVerification || "").trim();
   const naverAccountId = String(body.naverAccountId || "").trim();
+  const siteDesign = parseSiteDesignId(body.siteDesign);
 
   if (!siteName || siteName.length < 2) {
     return NextResponse.json({ error: "사이트 이름을 입력해 주세요." }, { status: 400 });
@@ -275,7 +277,8 @@ export async function POST(req: NextRequest) {
       siteName,
       keywords,
       bodyContent,
-      imageCount
+      imageCount,
+      siteDesign
     );
 
     const defaultLimit = resolveDailySeoLimit(settings);
@@ -347,7 +350,8 @@ export async function POST(req: NextRequest) {
       vercelDomain: vercel.ok ? vercel.data : undefined,
       vercelSkipped: !vercel.ok,
       naverRegisterQueued,
-      message: `사이트가 Supabase에 저장되었습니다.${vercelNote}${
+      siteDesign,
+      message: `사이트가 Supabase에 저장되었습니다. (${siteDesignLabel(siteDesign)})${vercelNote}${
         naverRegisterQueued ? " VM 네이버 등록 대기열에 추가되었습니다." : ""
       } ${siteUrl} 에서 확인하세요.`,
     });

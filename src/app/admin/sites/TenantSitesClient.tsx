@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { TenantSiteSummary } from "@/types/tenant";
+import { siteDesignLabel } from "@/lib/site-designs";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("ko-KR", {
@@ -194,10 +195,13 @@ export default function TenantSitesClient() {
                           {site.subdomain}
                         </p>
                         {site.designVariant && (
-                          <span className="text-[10px] text-gray-400 uppercase mt-1 inline-block">
+                          <span className="text-[10px] text-gray-400 uppercase mt-1 inline-block mr-2">
                             {site.designVariant}
                           </span>
                         )}
+                        <span className="text-[10px] font-semibold text-orange/80 mt-1 inline-block">
+                          {siteDesignLabel(site.siteDesign)}
+                        </span>
                       </td>
                       <td className="px-4 py-4 hidden sm:table-cell">
                         <a

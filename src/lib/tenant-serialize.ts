@@ -22,6 +22,7 @@ export function toTenantSiteSummary(row: TenantSiteConfigRow): TenantSiteSummary
     hasNaverVerification: !!row.naver_verification?.trim(),
     hasNaverAccount: !!row.naver_account_id,
     naverSiteRegistered: !!row.naver_site_registered_at,
+    siteDesign: content.siteDesign === "b" ? "b" : "a",
     dailySeoLimit: row.daily_seo_limit,
     designVariant: content.designVariant || null,
   };

@@ -221,3 +221,76 @@ body.tenant-header-overlay header + main .hero-section {
   margin-top: 0;
 }
 
+/* B 디자인 — 센터 히어로 · 카드형 통계 · 라운드 CTA */
+body.tenant-design-b .hero-section .max-w-2xl {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  max-width: 42rem;
+}
+
+body.tenant-design-b .hero-section .flex.flex-wrap {
+  justify-content: center;
+}
+
+body.tenant-design-b .hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--dark) 75%, transparent),
+    color-mix(in srgb, var(--dark) 88%, transparent) 45%,
+    color-mix(in srgb, var(--orange) 25%, var(--dark)) 100%
+  );
+}
+
+body.tenant-design-b .hero-badge {
+  border-radius: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+body.tenant-design-b .hero-section a.rounded-full {
+  border-radius: 0.75rem;
+}
+
+body.tenant-design-b .tenant-stats-modern,
+body.tenant-design-b .tenant-stats-bold,
+body.tenant-design-b .tenant-stats-classic {
+  background: var(--cream);
+  color: var(--dark);
+}
+
+body.tenant-design-b .tenant-stats-modern p,
+body.tenant-design-b .tenant-stats-bold p,
+body.tenant-design-b .tenant-stats-classic p {
+  color: var(--dark);
+}
+
+body.tenant-design-b .tenant-stats-modern .text-orange,
+body.tenant-design-b .tenant-stats-bold .text-orange,
+body.tenant-design-b .tenant-stats-classic .text-orange {
+  color: var(--orange);
+}
+
+body.tenant-design-b .tenant-stats-modern .text-gray-400,
+body.tenant-design-b .tenant-stats-bold .text-gray-400,
+body.tenant-design-b .tenant-stats-classic .text-gray-400 {
+  color: color-mix(in srgb, var(--dark) 55%, transparent);
+}
+
+body.tenant-design-b .tenant-stats-modern .grid > div,
+body.tenant-design-b .tenant-stats-bold .grid > div,
+body.tenant-design-b .tenant-stats-classic .grid > div {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem 0.75rem;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--dark) 8%, transparent);
+}
+
+body.tenant-design-b main > section:nth-child(even):not(.hero-section) {
+  background: color-mix(in srgb, var(--cream) 70%, white);
+}
+
+body.tenant-design-b header {
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--orange) 12%, transparent);
+}
+

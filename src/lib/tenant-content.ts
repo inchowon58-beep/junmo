@@ -1,4 +1,5 @@
 import type { TenantContentData } from "@/types/tenant";
+import { type SiteDesignId, DEFAULT_SITE_DESIGN } from "@/lib/site-designs";
 
 export type DesignVariant = "classic" | "modern" | "bold";
 export type HeaderStyle = "sticky" | "overlay" | "minimal" | "hidden";
@@ -101,7 +102,9 @@ function extractRegion(keywords: string, siteName: string): string {
 }
 
 const DESIGN_VARIANTS: DesignVariant[] = ["classic", "modern", "bold"];
+const DESIGN_VARIANTS_B: DesignVariant[] = ["modern", "bold"];
 const HEADER_STYLES: HeaderStyle[] = ["sticky", "overlay", "minimal", "hidden"];
+const HEADER_STYLES_B: HeaderStyle[] = ["minimal", "sticky"];
 
 const HERO_BADGES = [
   "폐업 철거, 부담 없이 마무리",
@@ -324,16 +327,29 @@ function pickSectionOrder(rng: () => number): HomeSectionId[] {
   return core;
 }
 
+const SECTION_ORDER_B_POOL: HomeSectionId[][] = [
+  ["cases", "support", "stats", "whyUs", "process", "reviews", "inquiry", "partner", "cta"],
+  ["support", "cases", "whyUs", "stats", "process", "inquiry", "reviews", "cta", "partner"],
+  ["cases", "whyUs", "support", "process", "stats", "reviews", "inquiry", "cta"],
+];
+
+function pickSectionOrderB(rng: () => number): HomeSectionId[] {
+  return pickOne(SECTION_ORDER_B_POOL, rng);
+}
+
 /** 서브도메인 시드로 사이트마다 다른 문구·레이아웃·이미지 패키지 생성 */
 export function pickTenantContentPackage(
   seed: string,
   siteName: string,
   keywords: string,
   bodyContent: string,
-  imageCount = 20
+  imageCount = 20,
+  siteDesign: SiteDesignId = DEFAULT_SITE_DESIGN
 ): TenantContentData {
-  const layoutSeed = hashString(seed);
+  const designSeed = siteDesign === "b" ? `${seed}:design-b` : seed;
+  const layoutSeed = hashString(designSeed);
   const rng = createRng(layoutSeed);
+  const isDesignB = siteDesign === "b";
   const maxImages = Math.max(4, imageCount);
   const region = extractRegion(keywords, siteName);
   const firstKeyword = keywords.split(/[,\n]/)[0]?.trim() || siteName;
@@ -346,10 +362,11 @@ export function pickTenantContentPackage(
   const reviews = shuffle(REVIEW_POOL, rng).slice(0, 4 + Math.floor(rng() * 3));
 
   return {
+    siteDesign,
     layoutSeed,
-    headerStyle: pickOne(HEADER_STYLES, rng),
-    sectionOrder: pickSectionOrder(rng),
-    designVariant: pickOne(DESIGN_VARIANTS, rng),
+    headerStyle: pickOne(isDesignB ? HEADER_STYLES_B : HEADER_STYLES, rng),
+    sectionOrder: isDesignB ? pickSectionOrderB(rng) : pickSectionOrder(rng),
+    designVariant: pickOne(isDesignB ? DESIGN_VARIANTS_B : DESIGN_VARIANTS, rng),
     heroBadge: pickOne(HERO_BADGES, rng),
     heroIntro: intro,
     heroClosing: closing,
@@ -393,7 +410,8 @@ export function resolveTenantContentData(
     siteName,
     keywords || content?.keywords || "",
     bodyContent || content?.body || "",
-    imageCount
+    imageCount,
+    content?.siteDesign || DEFAULT_SITE_DESIGN
   );
 
   return {
