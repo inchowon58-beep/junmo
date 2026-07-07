@@ -28,11 +28,11 @@ export default async function CasesC() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
           <div>
-            <p className="text-xs tracking-[0.25em] uppercase text-stone-400 mb-3">Projects</p>
+            <p className="text-xs tracking-[0.25em] uppercase text-stone-400 mb-3">Stories</p>
             <h2 className="home-c-editorial text-3xl sm:text-4xl font-light text-stone-900">
-              현장에서 만난
+              보호소에서 만난
               <br />
-              이야기들
+              소중한 이야기
             </h2>
           </div>
           <Link href="/#contact" className="text-sm text-stone-500 hover:text-orange transition shrink-0">
@@ -51,7 +51,7 @@ export default async function CasesC() {
                   className="object-cover group-hover:scale-[1.02] transition duration-500"
                 />
                 <span className="absolute top-3 left-3 text-[10px] tracking-wider uppercase bg-white/90 text-stone-700 px-2.5 py-1 rounded-full">
-                  시공 완료
+                  보호 중
                 </span>
               </div>
               <h3 className="text-lg font-medium text-stone-900 mb-1">{item.title}</h3>

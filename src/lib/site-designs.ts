@@ -13,7 +13,7 @@ export const SITE_DESIGN_OPTIONS = [
   {
     id: "c",
     label: "C 디자인",
-    description: "agapet 스타일 · 에디토리얼 히어로 · 크림 톤 · 약속·스토리·시공사례",
+    description: "아가펫 스타일 · 에디토리얼 히어로 · 크림 톤 · 약속·스토리·보호사례",
   },
   {
     id: "d",
@@ -24,7 +24,7 @@ export const SITE_DESIGN_OPTIONS = [
 
 export type SiteDesignId = (typeof SITE_DESIGN_OPTIONS)[number]["id"];
 
-export const DEFAULT_SITE_DESIGN: SiteDesignId = "a";
+export const DEFAULT_SITE_DESIGN: SiteDesignId = "c";
 
 const DESIGN_IDS = new Set<string>(SITE_DESIGN_OPTIONS.map((o) => o.id));
 

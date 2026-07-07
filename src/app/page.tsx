@@ -11,7 +11,7 @@ import { getResolvedSiteConfig } from "@/utils/siteConfig";
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
   return buildPageMetadata(config, {
-    title: `${config.brandName} | 폐업철거 전문 · 폐업지원금 원스톱`,
+    title: `${config.brandName} | 유기동물 보호·입양 전문`,
     description: config.description,
     path: "/",
     ogPath: "/opengraph-image",

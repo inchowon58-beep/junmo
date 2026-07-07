@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getSiteConfig } from "@/lib/site-config";
 import { OgBrandedLayout, OG_SIZE } from "@/lib/og-template";
 
-export const alt = "1977철거 폐업철거 전문";
+export const alt = "아가펫보호소 유기동물 보호·입양";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
@@ -13,9 +13,9 @@ export default async function OpenGraphImage() {
     (
       <OgBrandedLayout
         brandName={config.brandName}
-        title="폐업철거 · 원상복구 전문"
+        title="유기동물 보호 · 입양"
         subtitle={config.description.slice(0, 80)}
-        badge="무료 방문 견적"
+        badge="입양·후원 상담"
       />
     ),
     {

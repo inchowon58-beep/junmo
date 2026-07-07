@@ -28,7 +28,7 @@ const CONTENT_RULES = `
 작성 조건:
 - 키워드를 자연스럽게 본문 전체에 5~8회 포함
 - 업체명·전화번호는 반드시 {{brandName}}, {{phone}} 등 토큰으로만 표기 (직접 입력 금지)
-- 폐업철거, 상가철거, 원상복구, 폐업지원금 관점으로 작성
+- 유기동물 보호, 입양, 임시보호, 후원, 봉사 관점으로 작성
 - 신뢰감 있는 전문가 톤, 허위·과장 금지
 - h2, h3, p, ul 태그만 사용 (img 태그 직접 사용 금지)
 - 본문 순수 텍스트 기준 **2800자 이상** (짧으면 안 됨)
@@ -45,23 +45,23 @@ const CONTENT_RULES = `
 `;
 
 const WRITING_ANGLES = [
-  "현장 실무자 관점에서 일정·안전·민원 대응을 중심으로",
-  "폐업 사업자 입장에서 비용·지원금·임대차 종료 일정을 중심으로",
-  "임대인·관리사무소 인수 기준과 원상복구 범위를 중심으로",
-  "업종별(음식점·학원·사무실) 철거 차이와 주의사항을 중심으로",
-  "견적 항목 분해와 숨은 비용 예방을 중심으로",
-  "철거 후 폐기물 분리·반출과 환경 규정을 중심으로",
+  "입양 희망자 관점에서 상담·매칭·사후 관리를 중심으로",
+  "보호소 운영 관점에서 구조·치료·재활을 중심으로",
+  "후원자 관점에서 투명한 운영·후원 활용을 중심으로",
+  "봉사자 관점에서 참여 방법·활동 내용을 중심으로",
+  "임시보호 가정 관점에서 준비 사항·절차를 중심으로",
+  "지역 유기동물 문제와 보호소 역할을 중심으로",
 ];
 
 const TITLE_STYLE_HINTS = [
-  "전문 시공·무료 견적 강조형",
-  "폐업지원금·원스톱 강조형",
-  "현장 맞춤·일정 안내형",
-  "비용·범위 설명형",
-  "지역 상가 철거 특화형",
-  "브랜드 신뢰·대표 상담형",
-  "업종별 철거 포인트형",
-  "임대차·원상복구 연계형",
+  "입양 상담·매칭 강조형",
+  "후원·봉사 참여 강조형",
+  "보호·치료 전문 강조형",
+  "지역 유기동물 안내형",
+  "임시보호·구조 강조형",
+  "책임 입양·사후 관리형",
+  "보호소 신뢰·투명 운영형",
+  "반려동물 복지 안내형",
 ];
 
 function hashKeyword(keyword: string): number {
@@ -107,18 +107,18 @@ export async function generateSeoContent({
     },
   });
 
-  const prompt = `당신은 폐업철거·상가철거 SEO 전문 작가입니다. 네이버 검색 최적화를 고려하여 한국어 HTML 콘텐츠를 작성하세요.
+  const prompt = `당신은 유기동물 보호소·입양 SEO 전문 작가입니다. 네이버 검색 최적화를 고려하여 한국어 HTML 콘텐츠를 작성하세요.
 
-업체 정보 (본문에 아래 토큰을 그대로 사용하세요):
+보호소 정보 (본문에 아래 토큰을 그대로 사용하세요):
 - 상호: {{brandName}} ({{companyName}})
 - 대표: {{representative}}
 - 연락처: {{phone}}
-- 지원금: 기본 {{supportBase}}, 추가 {{supportExtra}}, 최대 {{supportMax}}
-- 특징: 폐업지원금 신청 대행, 무료 방문 견적, 철거·원상복구 원스톱, 전국 시공
+- 활동: {{supportBase}}, {{supportExtra}}, {{supportMax}}
+- 특징: 유기동물 구조·치료, 책임 입양, 임시보호, 후원·봉사, 입양 전·후 상담
 
 키워드: "${corePhrase}"
 (원본 입력: "${keyword}" — 지역명은 한 번만 사용)
-${region ? `지역 맥락: ${region} 지역 상가·폐업철거 (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
+${region ? `지역 맥락: ${region} 지역 유기동물·입양 (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
 제목 작성 스타일: ${titleStyleHint}
 작성 관점: ${angle}
 고유 시드(다른 글과 중복 금지): ${uniqueSeed}
@@ -186,44 +186,44 @@ export function buildDefaultFaqs(keyword: string, site: SiteConfig): SeoFaq[] {
   const faqSets: SeoFaq[][] = [
     [
       {
-        question: `${keyword} 비용은 어떻게 산정되나요?`,
-        answer: `평수, 업종, 원상복구 범위, 폐기물 처리량에 따라 달라집니다. {{brandName}}은 무료 현장 방문 견적을 제공하며, 견적서에 철거·복구·철거 후 정리 항목을 구분해 안내합니다. 폐업지원금 활용 시 실제 부담을 줄일 수 있습니다.`,
+        question: `${keyword} 입양 절차는 어떻게 되나요?`,
+        answer: `문의·상담 후 보호소 방문, 성향 매칭, 입양 결정 순으로 진행됩니다. {{brandName}}은 입양 전·후 상담을 지원하며, 전화 {{phone}}로 예약할 수 있습니다.`,
       },
       {
-        question: `폐업지원금과 함께 ${keyword}가 가능한가요?`,
-        answer: `네. {{brandName}}은 폐업지원금 신청부터 철거·원상복구까지 원스톱으로 지원합니다. 기본 {{supportBase}}, 추가 {{supportExtra}}로 최대 {{supportMax}}까지 안내받으실 수 있으며, 업종·지역·평수에 따라 달라질 수 있습니다.`,
+        question: `${keyword} 입양 비용이 있나요?`,
+        answer: `입양 시 기본 의료비·중성화 비용 등이 발생할 수 있습니다. {{brandName}}은 상담 시 비용 항목을 투명하게 안내해 드립니다.`,
       },
       {
         question: `${keyword} 상담은 어떻게 하나요?`,
-        answer: `전화 {{phone}}로 상담 후 무료 현장 방문 견적을 진행합니다. 폐업 예정일, 철거 범위, 임대차 계약 종료일을 알려주시면 일정에 맞춘 맞춤 안내를 해 드립니다.`,
+        answer: `전화 {{phone}} 또는 홈페이지 문의 폼으로 연락주시면 입양·후원·봉사 상담을 도와드립니다. 보호소 방문은 사전 예약제입니다.`,
       },
     ],
     [
       {
-        question: `${regionNote}${keyword} 견적은 무료인가요?`,
-        answer: `{{brandName}}은 현장 방문 후 항목별 견적서를 무료로 제공합니다. 철거만 필요한 경우와 원상복구가 포함된 경우를 나눠 비교할 수 있어 의사결정에 도움이 됩니다.`,
+        question: `${regionNote}${keyword} 후원은 어떻게 하나요?`,
+        answer: `{{brandName}}은 정기·일시 후원을 받으며, 후원금 사용 내역을 투명하게 공개합니다. {{phone}}로 후원 방법을 안내받으실 수 있습니다.`,
       },
       {
-        question: `${keyword} 시 공사 기간은 얼마나 걸리나요?`,
-        answer: `평수와 철거 범위에 따라 보통 1~5일 정도입니다. 임대차 종료일이 정해져 있다면 {{phone}}로 연락 주시면 일정에 맞춘 작업 계획을 안내해 드립니다.`,
+        question: `임시보호도 가능한가요?`,
+        answer: `긴급 구조·치료가 필요한 경우 임시보호 가정을 연계합니다. {{brandName}}에 상황을 알려주시면 절차를 안내해 드립니다.`,
       },
       {
-        question: `원상복구까지 맡길 수 있나요?`,
-        answer: `네. {{brandName}}은 철거와 함께 도배·바닥·전기 원위치 등 임대인 요구에 맞는 원상복구까지 진행합니다. 폐업지원금과 병행 시 비용 부담을 줄일 수 있습니다.`,
+        question: `봉사 참여는 어떻게 하나요?`,
+        answer: `산책, 청소, 미용 등 보호소 활동 봉사를 환영합니다. {{phone}}로 봉사 일정과 참여 방법을 문의해 주세요.`,
       },
     ],
     [
       {
-        question: `${keyword} 전에 준비할 서류가 있나요?`,
-        answer: `임대차 계약서, 사업자등록 관련 자료, 폐업 예정일 등을 준비해 주시면 지원금 신청과 견적 산정이 빠릅니다. {{brandName}}이 필요 서류를 단계별로 안내합니다.`,
+        question: `${keyword} 입양 전 준비할 것은?`,
+        answer: `생활 환경, 가족 구성, 반려 경험 등을 상담 시 알려주시면 맞는 아이를 추천해 드립니다. {{brandName}}이 입양 전 체크리스트를 안내합니다.`,
       },
       {
-        question: `주말·야간 철거도 가능한가요?`,
-        answer: `상가 특성과 인근 민원을 고려해 작업 시간을 협의합니다. 음식점·학원 등 업종에 따라 야간 작업이 유리한 경우도 있어 현장 상담 시 일정을 조율합니다.`,
+        question: `처음 입양인데 괜찮을까요?`,
+        answer: `{{brandName}}은 입양 초보 가정을 위한 상담과 사후 관리를 제공합니다. 궁금한 점은 {{phone}}로 편하게 문의하세요.`,
       },
       {
-        question: `집기·비품은 어떻게 처리하나요?`,
-        answer: `매입 가능한 집기는 철거 비용에서 공제할 수 있고, 불가 품목은 지정 방식으로 반출합니다. {{phone}} 상담 시 보유 집기 목록을 알려주시면 반영해 드립니다.`,
+        question: `보호소 방문은 예약이 필요한가요?`,
+        answer: `네, 보호 동물과 봉사자의 안전을 위해 사전 예약제로 운영합니다. {{phone}}로 방문 일정을 잡아 주세요.`,
       },
     ],
   ];
@@ -237,150 +237,42 @@ type FallbackBuilder = (keyword: string, region: string | null) => string;
 const FALLBACK_VARIANTS: FallbackBuilder[] = [
   (keyword, region) => {
     const core = buildSeoCorePhrase(keyword);
-    const loc = region ? `${region} ` : "";
     return `
-<h2>${core} — {{brandName}} 맞춤 안내</h2>
-<p>{{companyName}} {{brandName}}은 ${region ? `${region}을 포함한 ` : ""}전국 폐업철거 현장을 다루며, ${core} 문의가 많은 편입니다. 상가 유형마다 주방·냉난방·마감재 구성이 달라 동일 평수라도 견적 차이가 날 수 있습니다.</p>
-<p>대표 {{representative}} 팀이 현장 실측 후 철거·원상복구·폐기물 반출을 한 번에 정리해 드립니다. 먼저 {{phone}}로 희망 일정과 평수를 알려주시면 빠르게 안내합니다.</p>
-{{image1}}
+<h2>${core} — {{brandName}} 안내</h2>
+<p>{{companyName}} {{brandName}}은 ${region ? `${region} 및 ` : ""}주변 지역의 유기·유실 반려동물을 보호하고, 새 가족을 찾아드립니다. ${core}에 관심 있으신 분들의 문의를 환영합니다.</p>
+<p>대표 {{representative}}와 보호소 팀이 구조·치료·입양 매칭·사후 상담까지 함께합니다. {{phone}}로 입양·후원·봉사 상담을 예약해 주세요.</p>
 
-<h2>${keyword} 견적이 달라지는 이유</h2>
-<p>층수, 엘리베이터 유무, 야간 작업 여부, 임대인이 요구하는 복구 수준이 비용에 영향을 줍니다. 특히 ${region || "해당"} 상권은 건물 연식과 관리 규정이 제각각이라 현장 확인 없이 단가만 비교하기 어렵습니다.</p>
-<p>{{brandName}}은 항목별 견적서를 제공해 숨은 비용을 줄입니다. 집기 매입이 가능하면 철거비 일부를 절감할 수도 있습니다.</p>
+<h2>${keyword} 입양 절차</h2>
 <ul>
-<li>철거: 고정 집기, 천장·벽체 마감, 전기 분리</li>
-<li>원상복구: 도배, 바닥, 급배수·배관 원위치</li>
-<li>반출: 일반·지정 폐기물 분리 수거</li>
+<li>1단계: 문의·상담 — 관심 분야와 생활 환경 확인</li>
+<li>2단계: 보호소 방문 — 아이들과 직접 만남</li>
+<li>3단계: 성향 매칭·입양 결정</li>
+<li>4단계: 입양 후 상담·건강 관리 지원</li>
 </ul>
 
-<h2>폐업지원금 활용 가이드</h2>
-<p>폐업철거지원금 {{supportBase}}, 추가 {{supportExtra}}로 최대 {{supportMax}}까지 지원 가능합니다. ${region ? `${region} ` : ""}지역·업종·평수에 따라 적용 조건이 달라지므로 철거 전 신청 가능 여부를 확인하는 것이 좋습니다.</p>
-<p>{{brandName}}은 서류 준비부터 정산까지 대행해 드리며, 지원금과 철거 일정을 맞춰 진행합니다.</p>
-{{image2}}
+<h2>후원·봉사 참여</h2>
+<p>{{brandName}}은 {{supportBase}}, {{supportExtra}}, {{supportMax}} 등 다양한 방식으로 함께할 수 있습니다. 후원금 사용 내역을 투명하게 공개하며, 산책·청소·미용 봉사도 환영합니다.</p>
 
-<h2>${keyword} 진행 순서</h2>
-<ul>
-<li>1단계: 전화 상담 — 폐업 예정일·평수·업종 확인</li>
-<li>2단계: 무료 방문 견적 — 철거·복구 범위 확정</li>
-<li>3단계: 계약 및 지원금 신청</li>
-<li>4단계: 철거·원상복구 시공</li>
-<li>5단계: 임대인 인수·현장 정리</li>
-</ul>
-<p>일정이 촉박한 경우 야간·주말 작업도 협의 가능합니다.</p>
-
-<h2>안전·민원·폐기물 관리</h2>
-<p>상가 철거는 소음·분진·안전 사고 예방이 핵심입니다. {{brandName}}은 작업 전 보양과 통로 확보를 진행하고, 건축·소방 관련 규정을 준수합니다.</p>
-<p>인근 상가 민원을 줄이기 위해 작업 시간대를 조율하며, 재활용 가능 품목은 분리 반출합니다.</p>
-{{image3}}
-
-<h2>문의 안내</h2>
-<p>${keyword} 관련 상담은 {{phone}}입니다. {{brandName}}이 ${region || "전국"} 현장 기준으로 맞춤 안내해 드립니다.</p>`.trim();
+<h2>${keyword} 상담 문의</h2>
+<p>전화 {{phone}} · {{brandName}}. 보호소 방문은 사전 예약제입니다.</p>`.trim();
   },
-
   (keyword, region) => {
-    const core = buildSeoCorePhrase(keyword);
-    const loc = region ? `${region} ` : "";
+    const area = region || "지역";
     return `
-<h2>${core} 현장에서 자주 나오는 질문</h2>
-<p>폐업을 앞둔 사업자분들이 가장 많이 묻는 것은 "얼마나 걸리나"와 "지원금을 쓸 수 있나"입니다. {{brandName}}은 {{phone}} 상담 시 이 두 가지를 먼저 정리해 드립니다.</p>
-<p>{{companyName}}은 음식점·카페·학원·사무실 등 업종별 철거 경험이 풍부하며, ${keyword} 키워드로 찾으신 분들께 현장 맞춤 견적을 제공합니다.</p>
-{{image1}}
+<h2>${area} 유기동물 보호 — {{brandName}}</h2>
+<p>{{brandName}}은 ${keyword} 관련 문의를 받고 있습니다. 유기동물 구조, 치료, 임시보호, 책임 입양을 진행합니다.</p>
+<p>입양을 처음 고민하시는 분도 {{phone}} 상담을 통해 단계별 안내를 받으실 수 있습니다.</p>
 
-<h2>업종별 ${keyword} 차이점</h2>
-<p>음식점은 주방 후드·가스·배수 라인 분리가 추가되고, 학원은 칸막이·책상 고정물 철거가 들어갑니다. 사무실은 전기 배선과 바닥 마감 복구 비중이 큽니다.</p>
-<p>${loc} 상권 특성을 반영해 필요 공정만 담은 견적을 제시합니다. 불필요한 복구 항목은 줄여 비용을 절감할 수 있습니다.</p>
-
-<h2>비용 절감 포인트</h2>
+<h2>보호소 활동</h2>
 <ul>
-<li>집기·비품 매입으로 철거비 공제</li>
-<li>폐업지원금 {{supportBase}} + {{supportExtra}} (최대 {{supportMax}})</li>
-<li>철거·복구 일괄 진행으로 이중 출장비 절약</li>
-<li>작업 일정 집중으로 임대료 부담 기간 단축</li>
+<li>긴급 구조 및 건강 검진</li>
+<li>치료·중성화·예방접종</li>
+<li>임시보호 가정 연계</li>
+<li>책임 입양 및 사후 관리</li>
 </ul>
-{{image2}}
 
-<h2>임대차 종료일에 맞춘 일정</h2>
-<p>임대인 인수일이 정해져 있으면 그 역산으로 철거 착수일을 잡아야 합니다. 원상복구 검수까지 여유를 두는 것이 중요합니다.</p>
-<p>{{brandName}}은 대표 {{representative}} 담당 팀이 일정표를 공유하고, 지연 요인(엘리베이터 예약, 폐기물 반출 등)을 미리 조율합니다.</p>
-
-<h2>원상복구 범위 확인</h2>
-<p>계약서의 특약과 임대인 요구서를 기준으로 복구 범위를 확정합니다. 도배 한 번, 바닥 전체 교체 등 항목마다 단가 차이가 크므로 서면 견적을 권장합니다.</p>
-<p>철거만 먼저 하고 복구는 별도 업체에 맡기면 일정·책임 소재가 나뉘어 불편할 수 있어, {{brandName}} 원스톱 진행을 많이 선택하십니다.</p>
-{{image3}}
-
-<h2>${keyword} 상담 연락처</h2>
-<p>무료 방문 견적은 {{phone}}으로 예약하세요. ${loc} 및 인근 지역도 당일·익일 방문이 가능한 경우가 많습니다.</p>`.trim();
-  },
-
-  (keyword, region) => {
-    const core = buildSeoCorePhrase(keyword);
-    return `
-<h2>{{brandName}}이 ${core}를 다루는 방식</h2>
-<p>철거는 단순 해체가 아니라 임대차 종료·지원금·민원까지 연결된 프로젝트입니다. {{companyName}}은 현장 사진과 항목 리스트를 기반으로 투명한 견적을 제공합니다.</p>
-<p>키워드 ${keyword}로 검색하신 분들께는 폐업 일정, 평수, 업종 세 가지를 먼저 확인한 뒤 맞춤 안내를 드립니다.</p>
-{{image1}}
-
-<h2>견적서에 꼭 들어가야 할 항목</h2>
-<ul>
-<li>철거 대상 목록(고정물·설비·집기)</li>
-<li>원상복구 상세(벽·바닥·천장·전기)</li>
-<li>폐기물 종류·예상 용량·반출 방법</li>
-<li>작업 일수·인력·장비·보양</li>
-<li>지원금 적용 가능 여부 및 예상 실부담</li>
-</ul>
-<p>{{brandName}} 견적서는 위 항목을 구분해 작성하므로 다른 업체와 비교하기 쉽습니다.</p>
-
-<h2>폐업지원금과 철거 동시 진행</h2>
-<p>지원금은 신청 시점·폐업 요건·면적 등에 따라 달라집니다. 기본 {{supportBase}}, 추가 {{supportExtra}}, 합산 최대 {{supportMax}}까지 안내받을 수 있습니다.</p>
-<p>서류 누락으로 지연되는 경우가 많아, {{brandName}}이 신청부터 완료까지 동행합니다.</p>
-{{image2}}
-
-<h2>${region || "현장"} 특성을 고려한 작업</h2>
-<p>건물 형태(단층·복층·지하), 주차·반출 동선, 관리사무소 규정을 사전에 확인합니다. 엘리베이터 사용 시간 제한이 있는 건물은 야간 반출을 검토하기도 합니다.</p>
-<p>소음 민원이 우려되는 상권은 주말·야간 작업을 분산해 진행합니다.</p>
-
-<h2>철거 후 인수 체크리스트</h2>
-<p>임대인과 함께 벽·바닥·천장, 전기·수도 마감 상태를 확인하고 사진을 남깁니다. 분쟁 예방을 위해 완료 사진을 제공합니다.</p>
-<p>추가 복구 요청이 있으면 {{phone}}로 연락 주시면 신속히 대응합니다.</p>
-{{image3}}
-
-<h2>지금 상담 받기</h2>
-<p>${keyword} — {{brandName}} {{phone}}. 무료 방문 견적과 지원금 가능 여부를 함께 안내해 드립니다.</p>`.trim();
-  },
-
-  (keyword, region) => {
-    const core = buildSeoCorePhrase(keyword);
-    const area = region ? `${region} ` : "";
-    return `
-<h2>${core} — 사업자를 위한 실전 가이드</h2>
-<p>폐업 후 철거를 미루면 임대료와 관리비 부담이 커집니다. {{brandName}}은 {{phone}} 접수 후 빠르면 당일 방문 견적 일정을 잡아 드립니다.</p>
-<p>{{companyName}} 대표 {{representative}}는 상가 철거 현장에서 발생하는 변수(숨은 배관, 석면 의심 자재 등)를 미리 점검해 일정 지연을 줄입니다.</p>
-{{image1}}
-
-<h2>철거 전 3가지 확인</h2>
-<ul>
-<li>임대차 계약의 원상복구 조항</li>
-<li>폐업일·사업자 폐업 신고 일정</li>
-<li>건물 관리규약(작업 시간·소음·반출 동선)</li>
-</ul>
-<p>위 세 가지가 정리되면 ${keyword} 견적이 훨씬 정확해집니다.</p>
-
-<h2>지원금 {{supportMax}} 활용 시나리오</h2>
-<p>기본 {{supportBase}}와 추가 {{supportExtra}}를 합쳐 실제 철거·복구 비용의 상당 부분을 충당할 수 있습니다. 업종·면적·지역에 따라 차이가 있으니 {{brandName}}과 사전 상담을 권합니다.</p>
-<p>지원금 확정 전에도 견적과 일정 계획은 먼저 받아 두실 수 있습니다.</p>
-{{image2}}
-
-<h2>공정별 예상 소요</h2>
-<p>소규모 사무실은 1~2일, 음식점 규모에 따라 3~5일이 일반적입니다. 원상복구 포함 시 추가 1~2일이 필요할 수 있습니다.</p>
-<p>${region ? `${region} ` : ""}현장 여건에 맞춰 인력과 장비를 배치하며, 완료 후 폐기물 처리 증빙을 안내해 드립니다.</p>
-
-<h2>왜 {{brandName}}인가</h2>
-<p>폐업지원금 신청 대행, 철거, 원상복구, 폐기물 반출을 한 곳에서 진행해 책임 소재가 분명합니다. 여러 업체를 부르는 것보다 일정 조율이 수월합니다.</p>
-<p>견적 항목을 숨기지 않고, 현장 사진과 함께 투명하게 안내합니다.</p>
-{{image3}}
-
-<h2>${keyword} 무료 견적</h2>
-<p>전화 {{phone}} · {{brandName}}. ${area}인근 상가 철거도 문의 환영합니다.</p>`.trim();
+<h2>${keyword} 자주 묻는 내용</h2>
+<p>입양 비용, 방문 예약, 후원 방법 등은 상담 시 자세히 안내해 드립니다. {{companyName}} {{brandName}}에 문의해 주세요.</p>`.trim();
   },
 ];
 
@@ -395,21 +287,21 @@ function generateFallbackContent(
   const titleVariants = [
     (k: string, r: string | null) => generateVariedSeoTitle(k, r),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 무료 방문 견적`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 입양 상담`),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 현장 맞춤`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 후원·봉사`),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} — 전문 시공`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} — 보호소 안내`),
   ];
   const descVariants = [
     (k: string, r: string | null) =>
-      `${buildSeoCorePhrase(k)} 무료 방문 견적, 폐업지원금 신청 대행. {{brandName}}이 철거부터 원상복구까지 원스톱으로 해결해 드립니다.`,
+      `${buildSeoCorePhrase(k)} 입양·후원 상담. {{brandName}}에서 유기동물 보호와 책임 입양을 진행합니다.`,
     (k: string, r: string | null) =>
-      `${r ? `${r} ` : ""}${extractServicePhrase(k, r)} 현장 맞춤 견적. 폐업지원금 최대 {{supportMax}}, {{brandName}} 전문 시공.`,
+      `${r ? `${r} ` : ""}${extractServicePhrase(k, r)} 전문 안내. {{brandName}} 임시보호·후원·봉사 환영.`,
     (k: string) =>
-      `{{brandName}} ${buildSeoCorePhrase(k)} — 철거·원상복구·폐기물 반출. 전화 {{phone}} 무료 상담.`,
+      `{{brandName}} ${buildSeoCorePhrase(k)} — 구조·치료·입양. 전화 {{phone}} 상담.`,
     (k: string) =>
-      `${buildSeoCorePhrase(k)} 비용·일정·지원금 한번에. {{brandName}} 폐업철거 전문.`,
+      `${buildSeoCorePhrase(k)} 입양 절차·후원 안내. {{brandName}} 유기동물 보호소.`,
   ];
 
   const tIdx = hashKeyword(keyword + "t") % titleVariants.length;

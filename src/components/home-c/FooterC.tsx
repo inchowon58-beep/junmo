@@ -16,12 +16,12 @@ export default function FooterC() {
           <div>
             <p className="text-2xl font-light text-white mb-1">{site.brandName}</p>
             <p className="text-xs tracking-[0.2em] uppercase text-stone-600 mb-6">
-              Demolition Partner
+              Animal Shelter
             </p>
             <blockquote className="text-sm leading-relaxed text-stone-500 italic">
-              &ldquo;투명한 견적으로,
+              &ldquo;버려지지 않는 생명,
               <br />
-              <em className="not-italic text-stone-400">끝까지</em> 곁을 지킵니다.&rdquo;
+              <em className="not-italic text-stone-400">함께하는</em> 두 번째 가족.&rdquo;
             </blockquote>
           </div>
           <div className="flex flex-col justify-end">

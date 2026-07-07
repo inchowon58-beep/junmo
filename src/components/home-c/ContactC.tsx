@@ -14,14 +14,14 @@ export default async function ContactC() {
             <p className="text-xs tracking-[0.25em] uppercase text-stone-500 mb-4">
               {site.brandName}
             </p>
-            <p className="text-sm text-stone-400 mb-2">— 안전한 철거 파트너</p>
+            <p className="text-sm text-stone-400 mb-2">— 유기동물 보호 단체</p>
             <h2 className="home-c-editorial text-3xl sm:text-4xl font-light leading-[1.2] mb-6">
               언제든 편하게
               <br />
               연락주세요.
             </h2>
             <p className="text-stone-400 text-sm leading-relaxed mb-12">
-              더 나은 두 번째 시작을 위하여,
+              입양, 후원, 봉사, 임시보호 — 궁금한 점이 있으시면 문의해 주세요.
             </p>
 
             <dl className="space-y-6 text-sm">
@@ -40,7 +40,7 @@ export default async function ContactC() {
               )}
               <div>
                 <dt className="text-[10px] tracking-[0.2em] uppercase text-stone-500 mb-1">Hours</dt>
-                <dd className="text-stone-300">평일 09:00 — 18:00 (예약제)</dd>
+                <dd className="text-stone-300">평일 10:00 — 18:00 (방문 예약제)</dd>
               </div>
               {showCompany && site.address && (
                 <div>

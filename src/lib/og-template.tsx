@@ -51,13 +51,13 @@ export function OgBrandedLayout({
             fontWeight: 900,
           }}
         >
-          77
+          아가
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ color: OG_COLORS.white, fontSize: 36, fontWeight: 800 }}>
             {brandName}
           </div>
-          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>폐업철거 · 원상복구 전문</div>
+          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>유기동물 보호 · 입양</div>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export function OgBrandedLayout({
       </div>
 
       <div style={{ color: OG_COLORS.gray, fontSize: 20 }}>
-        무료 방문 견적 · 폐업지원금 상담
+        입양 · 후원 · 봉사 상담
       </div>
     </div>
   );
@@ -102,7 +102,7 @@ export function OgBrandedLayout({
 
 export function FaviconLayout({ size }: { size: number }): ReactNode {
   const fontSize = size >= 180 ? 56 : size >= 48 ? 18 : 14;
-  const label = size >= 180 ? "1977" : "77";
+  const label = size >= 180 ? "아가" : "🐾";
 
   return (
     <div

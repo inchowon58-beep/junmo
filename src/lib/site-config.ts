@@ -25,7 +25,7 @@ export type { SiteConfig, PublicSiteConfig, ExposureMode };
 export { DEFAULT_SITE_CONFIG, phoneToTel, toPublicConfig, DEFAULT_EXPOSURE_MODE };
 
 /** 과거 저장 콘텐츠 치환용 (설정 변경 시 자동 반영) */
-const LEGACY_BRANDS = ["123철거", "1977철거"];
+const LEGACY_BRANDS = ["123철거", "1977철거", "아가펫보호소"];
 const LEGACY_PHONES = ["1555-7321", "15557321"];
 const LEGACY_COMPANIES = ["주식회사베룸", "주식회사 베룸"];
 

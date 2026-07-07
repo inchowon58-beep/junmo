@@ -23,15 +23,15 @@ export function inquiryHref(pathname: string): string {
 
 export function inquiryButtonLabel(mode: ExposureMode, context: "header" | "floating" | "cta"): string {
   if (mode === "cpa") {
-    if (context === "header") return "3초 빠른문의 신청하기";
-    return "3초 견적신청 문의하기";
+    if (context === "header") return "빠른 문의 신청하기";
+    return "입양·후원 문의하기";
   }
-  if (context === "header" || context === "floating") return "3초 견적문의";
-  return "3초 견적문의";
+  if (context === "header" || context === "floating") return "입양·후원 문의";
+  return "입양·후원 문의";
 }
 
 export function inquiryFormTitle(mode: ExposureMode): string {
-  return mode === "cpa" ? "3초 견적신청 문의하기" : "3초 견적신청 문의하기";
+  return mode === "cpa" ? "입양·후원 빠른 문의" : "입양·후원 문의하기";
 }
 
 /** CPA: 주황(기본) / 업체정보: 검정(보조) */
@@ -41,7 +41,7 @@ export function inquiryAccentButtonClass(mode: ExposureMode): string {
     : "bg-dark text-white hover:bg-dark-light";
 }
 
-/** 어두운 배경 위 견적 버튼 — CPA는 주황, 업체정보는 흰색 보조 */
+/** 어두운 배경 위 문의 버튼 — CPA는 주황, 업체정보는 흰색 보조 */
 export function inquiryOnDarkBgClass(mode: ExposureMode): string {
   return isCpaExposure(mode)
     ? "bg-orange text-white hover:bg-orange-light"

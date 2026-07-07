@@ -94,9 +94,9 @@ export default function QuickInquiryForm({
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#03C75A] text-white text-2xl font-bold mb-4">
             ✓
           </div>
-          <h2 className="text-xl font-bold text-dark mb-2">견적 신청이 완료되었습니다</h2>
+          <h2 className="text-xl font-bold text-dark mb-2">문의가 접수되었습니다</h2>
           <p className="text-sm text-gray-600 mb-6">
-            {brandName} 전문 상담사가 빠르게 연락드리겠습니다.
+            {brandName} 담당자가 빠르게 연락드리겠습니다.
           </p>
           <button
             type="button"
@@ -118,12 +118,12 @@ export default function QuickInquiryForm({
       <div className="bg-gradient-to-r from-orange to-orange-light px-6 py-5 lg:px-8 text-white">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center justify-center bg-white/20 text-xs font-bold px-3 py-1 rounded-full">
-            3초 견적
+            빠른 문의
           </span>
           <h2 className="text-xl lg:text-2xl font-bold">{formTitle}</h2>
         </div>
         <p className="text-sm text-white/90 mt-2">
-          {keyword} · 무료 방문 견적 · 폐업지원금 상담
+          {keyword} · 입양 · 후원 · 봉사 상담
         </p>
       </div>
 
@@ -166,22 +166,22 @@ export default function QuickInquiryForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">업종</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">관심 분야</label>
             <input
               type="text"
               value={businessType}
               onChange={(e) => setBusinessType(e.target.value)}
-              placeholder="예: 식당, 카페, 사무실"
+              placeholder="예: 입양, 후원, 봉사, 임시보호"
               className={inputClass}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">평수</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">반려동물 종류</label>
             <input
               type="text"
               value={area}
               onChange={(e) => setArea(e.target.value)}
-              placeholder="예: 30평"
+              placeholder="예: 강아지, 고양이"
               className={inputClass}
             />
           </div>
@@ -190,7 +190,7 @@ export default function QuickInquiryForm({
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="철거 일정, 폐업지원금 문의 등 자유롭게 남겨주세요."
+              placeholder="입양 희망, 후원·봉사 문의 등 자유롭게 남겨주세요."
               rows={3}
               className={`${inputClass} resize-y`}
             />
@@ -245,7 +245,7 @@ export default function QuickInquiryForm({
           {submitting ? "신청 중..." : "신청하기"}
         </button>
         <p className="text-center text-xs text-gray-400 mt-3">
-          신청 후 전문 상담사가 빠르게 연락드립니다.
+          신청 후 담당자가 빠르게 연락드립니다.
         </p>
       </form>
     </section>

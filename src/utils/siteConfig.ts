@@ -91,10 +91,18 @@ export async function getResolvedSiteConfig(
   } as SiteConfig;
 
   if (!isSupabaseConfigured() || !hostname) {
+    const legacyUi = resolveTenantContentData(
+      { siteDesign: "c" },
+      "agapet-shelter",
+      baseConfig.brandName,
+      "아가펫보호소,유기동물,입양,후원,봉사,임시보호",
+      baseConfig.description,
+      baseConfig.imageCount
+    );
     return {
       config: baseConfig,
       tenant: null,
-      tenantUi: null,
+      tenantUi: legacyUi,
       theme: null,
       isTenant: false,
       hostname,
@@ -104,10 +112,18 @@ export async function getResolvedSiteConfig(
   try {
     const tenant = await fetchTenantByHostname(hostname);
     if (!tenant) {
+      const legacyUi = resolveTenantContentData(
+        { siteDesign: "c" },
+        hostname || "agapet-shelter",
+        baseConfig.brandName,
+        "아가펫보호소,유기동물,입양,후원,봉사",
+        baseConfig.description,
+        baseConfig.imageCount
+      );
       return {
         config: baseConfig,
         tenant: null,
-        tenantUi: null,
+        tenantUi: legacyUi,
         theme: null,
         isTenant: false,
         hostname,

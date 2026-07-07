@@ -6,7 +6,7 @@ import {
   put,
 } from "@vercel/blob";
 
-const PREFIX = process.env.BLOB_PREFIX || "1977demol";
+const PREFIX = process.env.BLOB_PREFIX || "agapet-shelter";
 
 type BlobAccess = "private" | "public";
 

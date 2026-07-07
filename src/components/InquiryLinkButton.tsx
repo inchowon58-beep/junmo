@@ -50,7 +50,7 @@ export default function InquiryLinkButton({
     >
       {context === "floating" ? (
         <>
-          <span className="text-[11px] sm:text-xs text-white/90">빠른 견적 신청</span>
+          <span className="text-[11px] sm:text-xs text-white/90">빠른 문의</span>
           <span className="font-bold text-sm sm:text-base">{label}</span>
         </>
       ) : (

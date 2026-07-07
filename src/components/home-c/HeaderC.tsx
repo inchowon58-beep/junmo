@@ -8,9 +8,9 @@ import { showCompanyContact } from "@/lib/exposure-mode";
 
 const NAV = [
   { href: "/#story", label: "우리 이야기" },
-  { href: "/#cases", label: "시공사례" },
-  { href: "/#support", label: "폐업지원금" },
-  { href: "/#process", label: "시공절차" },
+  { href: "/#cases", label: "보호 사례" },
+  { href: "/#support", label: "후원·봉사" },
+  { href: "/#process", label: "입양 절차" },
   { href: "/#contact", label: "문의" },
 ] as const;
 
@@ -28,7 +28,7 @@ export default function HeaderC() {
               {site.brandName}
             </span>
             <span className="block text-[10px] text-stone-400 tracking-[0.2em] uppercase">
-              Demolition Partner
+              Animal Shelter
             </span>
           </Link>
 

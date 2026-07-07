@@ -9,10 +9,10 @@ export default async function ProcessC() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-xs tracking-[0.25em] uppercase text-stone-400 mb-3">Process</p>
         <h2 className="home-c-editorial text-3xl sm:text-4xl font-light text-stone-900 mb-4">
-          처음이라 어려우신가요?
+          입양이 처음이신가요?
         </h2>
         <p className="text-stone-500 text-sm mb-16 max-w-lg">
-          철거와 원상복구, 둘 다 쉬운 결정이 아닙니다.
+          입양은 쉬운 결정이 아닙니다.
           <br />
           단계별로 천천히 함께 걷겠습니다.
         </p>

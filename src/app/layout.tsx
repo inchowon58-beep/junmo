@@ -69,7 +69,7 @@ export default async function RootLayout({
   const businessJsonLd = showCompany
     ? {
         "@context": "https://schema.org",
-        "@type": "HomeAndConstructionBusiness",
+        "@type": "AnimalShelter",
         name: config.brandName,
         legalName: config.companyName,
         description: config.description,

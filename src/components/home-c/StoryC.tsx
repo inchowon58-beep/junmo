@@ -11,7 +11,7 @@ export default async function StoryC() {
   const about =
     tenantUi?.aboutText ||
     site.description ||
-    "어려운 상황에 놓인 사업자를 위한 공간이 되었습니다. 투명한 견적과 안전한 시공으로 믿음을 지킵니다.";
+    "어려운 상황에 놓인 반려동물을 위한 공간이 되었습니다. 치료와 사랑으로 믿음을 지킵니다.";
 
   return (
     <section id="story" className="home-c-section py-20 lg:py-28">

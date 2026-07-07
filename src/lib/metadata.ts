@@ -97,19 +97,20 @@ export function buildSiteMetadata(config: SiteConfig): Metadata {
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: `${config.brandName} | 폐업철거 전문`,
+      default: `${config.brandName} | 유기동물 보호·입양`,
       template: `%s | ${config.brandName}`,
     },
     description: config.description,
     keywords: [
       config.brandName,
-      "폐업철거",
-      "상가철거",
-      "원상복구",
-      "폐업지원금",
-      "철거견적",
-      "무료방문견적",
-      "인테리어철거",
+      "유기동물",
+      "반려동물 입양",
+      "동물보호소",
+      "임시보호",
+      "후원",
+      "봉사",
+      "유기견",
+      "유기묘",
     ],
     alternates: {
       canonical: baseUrl,
