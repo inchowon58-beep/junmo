@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import type { CreateSiteResult, NaverAccountSummary } from "@/types/tenant";
 import Link from "next/link";
-import type { CreateSiteResult } from "@/types/tenant";
+import { useEffect, useState } from "react";
 
 export default function RegisterSiteClient() {
   const [siteName, setSiteName] = useState("");
@@ -12,9 +12,26 @@ export default function RegisterSiteClient() {
   const [slackWebhook, setSlackWebhook] = useState("");
   const [naverVerification, setNaverVerification] = useState("");
   const [dailySeoLimit, setDailySeoLimit] = useState("");
+  const [naverAccountId, setNaverAccountId] = useState("");
+  const [naverAccounts, setNaverAccounts] = useState<NaverAccountSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<CreateSiteResult | null>(null);
+
+  useEffect(() => {
+    async function loadAccounts() {
+      try {
+        const res = await fetch("/api/admin/naver-accounts", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = Array.isArray(data.accounts) ? data.accounts : [];
+        setNaverAccounts(list.filter((a: NaverAccountSummary) => a.isActive));
+      } catch {
+        /* ignore */
+      }
+    }
+    void loadAccounts();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +49,8 @@ export default function RegisterSiteClient() {
           keywords,
           bodyContent,
           slackWebhook,
-          naverVerification,
+          naverVerification: naverAccountId ? "" : naverVerification,
+          naverAccountId: naverAccountId || undefined,
           ...(dailySeoLimit.trim() ? { dailySeoLimit: dailySeoLimit.trim() } : {}),
         }),
       });
@@ -67,9 +85,12 @@ export default function RegisterSiteClient() {
               Supabase + Vercel API로 서브도메인 사이트를 자동 생성합니다.
             </p>
           </div>
-          <Link href="/admin/sites" className="text-sm text-orange hover:underline shrink-0">
-            등록 사이트 목록
-          </Link>
+            <Link href="/admin/naver-accounts" className="text-orange font-medium hover:underline">
+              네이버 계정
+            </Link>
+            <Link href="/admin/sites" className="text-orange font-medium hover:underline">
+              등록 사이트
+            </Link>
           <Link href="/admin/master" className="text-sm text-orange hover:underline shrink-0">
             ← 마스터
           </Link>
@@ -81,7 +102,14 @@ export default function RegisterSiteClient() {
               ✓
             </div>
             <h2 className="text-xl font-bold text-dark mb-2">사이트 생성 완료</h2>
-            <p className="text-sm text-gray-600 mb-6">{result.message}</p>
+            <p className="text-sm text-gray-600 mb-6">
+              {result.message}
+              {result.naverRegisterQueued && (
+                <span className="block mt-2 text-orange font-medium">
+                  VM이 네이버 계정으로 사이트 등록·인증 메타값을 자동 처리합니다.
+                </span>
+              )}
+            </p>
             {result.siteUrl && (
               <a
                 href={result.siteUrl}
@@ -123,6 +151,7 @@ export default function RegisterSiteClient() {
                 setSlackWebhook("");
                 setNaverVerification("");
                 setDailySeoLimit("");
+                setNaverAccountId("");
               }}
               className="mt-6 text-sm text-gray-500 hover:text-orange"
             >
@@ -212,15 +241,44 @@ export default function RegisterSiteClient() {
             </div>
 
             <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  네이버 계정 (VM 자동 등록)
+                </label>
+                <Link href="/admin/naver-accounts" className="text-xs text-orange hover:underline">
+                  계정 관리
+                </Link>
+              </div>
+              <select
+                value={naverAccountId}
+                onChange={(e) => setNaverAccountId(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange bg-white"
+              >
+                <option value="">선택 안 함 (수동 인증)</option>
+                {naverAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.naverId}
+                    {a.vmLabel ? ` · ${a.vmLabel}` : ""}
+                    {a.label ? ` (${a.label})` : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                선택 시 해당 네이버 ID를 쓰는 VM이 서치어드바이저 사이트 등록·메타값·소유확인을 자동 진행합니다.
+              </p>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                네이버 사이트 인증 메타값 (선택)
+                네이버 사이트 인증 메타값 (수동 시만)
               </label>
               <input
                 type="text"
                 value={naverVerification}
                 onChange={(e) => setNaverVerification(e.target.value)}
-                placeholder="네이버 서치어드바이저 verification content"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange text-sm"
+                disabled={!!naverAccountId}
+                placeholder={naverAccountId ? "VM이 자동 등록합니다" : "네이버 서치어드바이저 verification content"}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:border-orange text-sm disabled:bg-gray-50 disabled:text-gray-400"
               />
             </div>
 

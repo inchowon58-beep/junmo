@@ -12,6 +12,8 @@ import { pickThemeColor } from "@/lib/tenant-theme";
 import { pickTenantContentPackage } from "@/lib/tenant-content";
 import { getSettings } from "@/lib/data";
 import { resolveDailySeoLimit } from "@/lib/seo-quota";
+import { fetchNaverAccountById } from "@/lib/supabase/naver-accounts";
+import { enqueueNaverSiteRegistration } from "@/lib/naver-register-worker";
 import type { CreateSiteInput, TenantContentData } from "@/types/tenant";
 
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
@@ -240,6 +242,7 @@ export async function POST(req: NextRequest) {
   const bodyContent = String(body.bodyContent || "").trim();
   const slackWebhook = String(body.slackWebhook || "").trim();
   const naverVerification = String(body.naverVerification || "").trim();
+  const naverAccountId = String(body.naverAccountId || "").trim();
 
   if (!siteName || siteName.length < 2) {
     return NextResponse.json({ error: "사이트 이름을 입력해 주세요." }, { status: 400 });
@@ -282,6 +285,18 @@ export async function POST(req: NextRequest) {
         ? Math.max(0, Number.parseInt(String(dailySeoLimitRaw), 10) || defaultLimit)
         : defaultLimit;
 
+    let linkedNaverAccountId: string | null = null;
+    if (naverAccountId) {
+      const account = await fetchNaverAccountById(naverAccountId);
+      if (!account || !account.is_active) {
+        return NextResponse.json(
+          { error: "선택한 네이버 계정을 찾을 수 없거나 비활성입니다." },
+          { status: 400 }
+        );
+      }
+      linkedNaverAccountId = account.id;
+    }
+
     const row = await insertTenantSiteConfig({
       site_name: siteName,
       subdomain,
@@ -289,10 +304,22 @@ export async function POST(req: NextRequest) {
       content_data: contentData,
       naver_verification: naverVerification || null,
       slack_webhook: slackWebhook || null,
+      naver_account_id: linkedNaverAccountId,
       daily_seo_limit: dailySeoLimit,
       seo_quota_date: null,
       seo_quota_count: 0,
     });
+
+    let naverRegisterQueued = false;
+    if (linkedNaverAccountId) {
+      await enqueueNaverSiteRegistration({
+        siteConfigId: row.id,
+        naverAccountId: linkedNaverAccountId,
+        siteName,
+        subdomain,
+      });
+      naverRegisterQueued = true;
+    }
 
     const vercel = await registerVercelDomain(subdomain);
     let vercelNote = "";
@@ -318,7 +345,10 @@ export async function POST(req: NextRequest) {
       themeColor,
       vercelDomain: vercel.ok ? vercel.data : undefined,
       vercelSkipped: !vercel.ok,
-      message: `사이트가 Supabase에 저장되었습니다.${vercelNote} ${siteUrl} 에서 확인하세요.`,
+      naverRegisterQueued,
+      message: `사이트가 Supabase에 저장되었습니다.${vercelNote}${
+        naverRegisterQueued ? " VM 네이버 등록 대기열에 추가되었습니다." : ""
+      } ${siteUrl} 에서 확인하세요.`,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "사이트 생성 중 알 수 없는 오류";
