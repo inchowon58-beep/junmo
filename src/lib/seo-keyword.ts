@@ -1,4 +1,5 @@
 import { extractRegionFromKeyword } from "./region-parse";
+import { buildTitleWithSeoSuffix } from "./seo-title-keywords";
 
 function hashText(text: string): number {
   let hash = 0;
@@ -166,25 +167,26 @@ export function buildSeoPageTitle(
   return title.slice(0, 55);
 }
 
-/** 브라우저 탭용 — 상호 1회만 */
-export function buildSeoBrowserTitle(pageTitle: string, brandName: string): string {
+/** 브라우저 탭용 — 상호 1회 + SEO 키워드 3개 */
+export function buildSeoBrowserTitle(pageTitle: string, brandName: string, seed?: string): string {
   const base = stripBrandFromTitle(pageTitle, brandName);
-  return `${base} | ${brandName}`;
+  const main = `${base} | ${brandName}`;
+  return buildTitleWithSeoSuffix(main, seed || pageTitle || brandName);
 }
 
 const TITLE_TEMPLATES: ((phrase: string, region: string | null) => string)[] = [
   (phrase, region) => `${region ? `${region} ` : ""}${phrase}`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 무료 현장 견적`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 파양·무료분양`.trim(),
   (phrase, region) =>
-    `${region ? `${region} ` : ""}${phrase} — 폐업지원금·철거 원스톱`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 전문 시공`.trim(),
+    `${region ? `${region} ` : ""}${phrase} — 입소·분양 상담`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 전문 센터`.trim(),
   (phrase, region) =>
-    `${region ? `${region} ` : ""}폐업철거 ${phrase}`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 비용·일정 상담`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 맞춤 견적`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} · 철거·원상복구`.trim(),
+    `${region ? `${region} ` : ""}강아지·고양이 ${phrase}`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 입소 비용 안내`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 맞춤 상담`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} · 무료분양·입양`.trim(),
   (phrase, region) => `${region ? `${region} ` : ""}${phrase} 현장 안내`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 지원금·견적`.trim(),
+  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 투명 입소`.trim(),
 ];
 
 export function finalizeSeoTitle(title: string, keyword: string): string {

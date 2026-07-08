@@ -101,7 +101,7 @@ function extractRegion(keywords: string, siteName: string): string {
   );
   if (match) return match[1];
   const first = keywords.split(/[,\n]/)[0]?.trim() || siteName;
-  return first.replace(/입양|보호소|유기동물|반려동물|후원|봉사/g, "").trim() || "지역";
+  return first.replace(/입양|보호소|파양|분양|무료/g, "").trim() || "지역";
 }
 
 const DESIGN_VARIANTS: DesignVariant[] = ["classic", "modern", "bold"];
@@ -110,191 +110,215 @@ const HEADER_STYLES: HeaderStyle[] = ["sticky", "overlay", "minimal", "hidden"];
 const HEADER_STYLES_B: HeaderStyle[] = ["minimal", "sticky"];
 
 const HERO_BADGES = [
-  "유기동물 보호, 함께해요",
-  "책임 있는 입양 파트너",
-  "작은 발걸음에 큰 사랑을",
-  "지역 맞춤 보호·입양",
-  "믿을 수 있는 보호소",
-  "입양·후원·봉사 환영",
-  "임시보호와 치료를 한곳에서",
-  "투명한 보호소 운영",
+  "강아지·고양이 파양 전문",
+  "책임 있는 무료분양 매칭",
+  "투명한 입소 비용 안내",
+  "가정견·가정묘 파양 상담",
+  "믿을 수 있는 요양보육",
+  "이민·이사·군입대 파양",
+  "강아지·고양이 무료입양",
+  "프리미엄 파양·분양 센터",
 ];
 
 const HERO_INTROS = [
-  "구조부터 치료·입양까지",
-  "건강 검진부터 새 가족 찾기까지",
-  "임시보호부터 책임 입양까지",
-  "후원·봉사로 함께하는 보호까지",
+  "파양 상담부터 무료분양 매칭까지",
+  "입소 견적부터 새 가족 찾기까지",
+  "가정견·가정묘 파양 입소부터 분양까지",
+  "투명한 입소 비용과 맞춤 케어까지",
   "상담부터 입양 후 관리까지",
-  "사랑으로 돌보는 보호 활동까지",
+  "현실적인 입소와 책임 매칭까지",
 ];
 
 const HERO_CLOSINGS = [
   "를 한곳에서 진행합니다",
   "가 따뜻하게 함께합니다",
-  "와 함께라면 희망이 있습니다",
+  "로 안전하게 연결합니다",
   "이 든든하게 돕습니다",
   "가 끝까지 함께합니다",
 ];
 
 const ABOUT_SNIPPETS = [
-  "유기·유실 동물을 안전하게 보호하고 건강하게 회복시킵니다.",
-  "입양 전 상담과 맞춤 매칭으로 행복한 만남을 돕습니다.",
-  "후원금 사용 내역을 투명하게 공개하며 운영합니다.",
-  "봉사자와 후원자의 따뜻한 손길로 보호소를 운영합니다.",
-  "치료·예방접종·중성화를 철저히 관리합니다.",
-  "입양 후에도 상담과 건강 관리를 지원합니다.",
+  "더 이상 함께하기 어려운 가정견·가정묘 파양 입소를 전문 상담으로 진행합니다.",
+  "강아지·고양이 무료분양·무료입양 매칭으로 새 가족을 찾아드립니다.",
+  "입소 비용을 항목별로 투명하게 안내하며 현실적인 관리비만 받습니다.",
+  "이민, 이사, 군입대, 임신·출산, 알러지 등 다양한 파양 사유를 이해하고 돕습니다.",
+  "건강검진·케어·생활 사진 공유로 입소 후에도 안심하실 수 있습니다.",
+  "분양·입양 후에도 상담과 적응 확인을 지원합니다.",
 ];
 
 const SUPPORT_BLURBS = [
-  "임시보호, 입양, 후원, 봉사 — 어떤 방식이든 작은 도움이 큰 변화를 만듭니다.",
-  "보호소 운영비와 의료비는 후원자분들의 따뜻한 마음으로 이어집니다.",
-  "입양을 고민 중이시라면 상담을 통해 맞는 아이를 찾아드립니다.",
-  "봉사 참여로 보호 동물에게 산책과 관심을 선물해 주세요.",
+  "모든 사설 보호소에는 입소 관리 비용이 발생합니다. 무료 입소를 내세우는 곳은 방문 후 과도한 비용을 요구할 수 있으니 주의하세요.",
+  "아가펫보호소는 아이 관리에 필요한 현실적인 비용만 투명하게 안내합니다. 입소 전 항목별 견적을 받으실 수 있습니다.",
+  "강아지·고양이 파양 입소, 무료분양·무료입양 상담 — 전화 한 통으로 시작하세요.",
+  "입소 기간·케어 항목에 따라 비용이 달라집니다. 방문 상담 시 정확한 견적을 안내해 드립니다.",
 ];
 
 const WHY_US_TITLES = [
-  "보호소를 믿을 수 있는 이유",
-  "가족들이 다시 찾는 이유",
-  "입양자들이 추천하는 이유",
-  "후원자들이 함께하는 이유",
+  "파양·분양을 믿을 수 있는 이유",
+  "보호자들이 다시 찾는 이유",
+  "입양·분양자들이 추천하는 이유",
+  "투명한 입소로 선택받는 이유",
 ];
 
 const STATS_SETS: TenantStatItem[][] = [
   [
-    { label: "누적 구조", value: "1,200+", suffix: "" },
-    { label: "입양 성공", value: "890+", suffix: "" },
-    { label: "봉사 참여", value: "3,500+", suffix: "" },
-    { label: "입양 만족", value: "97", suffix: "%" },
+    { label: "누적 파양 상담", value: "8,400", suffix: "+" },
+    { label: "분양·입양 매칭", value: "3,200", suffix: "+" },
+    { label: "입소 만족도", value: "97", suffix: "%" },
+    { label: "평균 상담 응답", value: "2", suffix: "시간" },
   ],
   [
-    { label: "보호 중", value: "120+", suffix: "" },
-    { label: "월 평균 입양", value: "25+", suffix: "" },
-    { label: "정기 후원자", value: "480+", suffix: "" },
-    { label: "치료 완료율", value: "99", suffix: "%" },
+    { label: "연간 파양 입소", value: "1,850", suffix: "+" },
+    { label: "월 평균 분양", value: "68", suffix: "+" },
+    { label: "입소 투명 공개", value: "100", suffix: "%" },
+    { label: "재상담율", value: "42", suffix: "%" },
   ],
   [
-    { label: "연간 구조", value: "350+", suffix: "" },
-    { label: "임시보호 가정", value: "85+", suffix: "" },
-    { label: "상담 응답", value: "당일", suffix: "" },
-    { label: "투명 공개", value: "100", suffix: "%" },
+    { label: "강아지 파양", value: "5,100", suffix: "+" },
+    { label: "고양이 파양", value: "3,300", suffix: "+" },
+    { label: "무료분양 성공", value: "2,800", suffix: "+" },
+    { label: "사후 상담", value: "12", suffix: "개월" },
   ],
   [
-    { label: "평균 상담", value: "2", suffix: "시간" },
-    { label: "주말 봉사", value: "가능", suffix: "" },
-    { label: "건강 검진", value: "100", suffix: "%" },
-    { label: "입양 후 상담", value: "1년", suffix: "" },
+    { label: "평균 매칭 기간", value: "21", suffix: "일" },
+    { label: "입소 건강검진", value: "100", suffix: "%" },
+    { label: "고객 추천율", value: "94", suffix: "%" },
+    { label: "센터 운영", value: "365", suffix: "일" },
   ],
 ];
 
 const WHY_US_SETS: TenantWhyUsItem[][] = [
   [
-    { num: "01", title: "전문 케어팀", highlight: "수의·행동", sub: "전문 상담" },
-    { num: "02", title: "책임 입양", highlight: "맞춤 매칭", sub: "사후 관리" },
-    { num: "03", title: "투명 운영", highlight: "공개 후원", sub: "정기 보고" },
+    { num: "01", title: "투명한 입소", highlight: "항목별 견적", sub: "현실적 비용" },
+    { num: "02", title: "책임 매칭", highlight: "파양·분양", sub: "맞춤 상담" },
+    { num: "03", title: "입소 후 공개", highlight: "생활 사진", sub: "방문 환영" },
   ],
   [
-    { num: "01", title: "건강 관리", highlight: "검진·접종", sub: "철저 관리" },
-    { num: "02", title: "임시보호", highlight: "긴급 구조", sub: "24시 대응" },
-    { num: "03", title: "봉사·후원", highlight: "열린 보호소", sub: "함께하기" },
+    { num: "01", title: "건강 관리", highlight: "검진·케어", sub: "철저 관리" },
+    { num: "02", title: "넓은 시설", highlight: "과밀 없음", sub: "쾌적 환경" },
+    { num: "03", title: "전문 상담", highlight: "파양·분양", sub: "24시 접수" },
   ],
   [
-    { num: "01", title: "맞춤 입양", highlight: "성향 분석", sub: "가족 매칭" },
+    { num: "01", title: "맞춤 분양", highlight: "성향 분석", sub: "가족 매칭" },
     { num: "02", title: "교육·상담", highlight: "입양 전후", sub: "지속 지원" },
-    { num: "03", title: "지역 협력", highlight: "구조 네트워크", sub: "연계 운영" },
+    { num: "03", title: "사후 관리", highlight: "적응 확인", sub: "책임 상담" },
   ],
 ];
 
 const PROCESS_SETS: TenantProcessItem[][] = [
   [
-    { step: "01", title: "문의·상담", desc: "입양·후원·봉사 문의를 접수합니다" },
-    { step: "02", title: "방문·만남", desc: "예약 후 보호소에서 아이들을 만납니다" },
-    { step: "03", title: "입양·후원", desc: "매칭 후 입양 또는 후원을 진행합니다" },
+    { step: "01", title: "전화·상담", desc: "파양·무료분양 사유와\n아이 정보를 알려주세요" },
+    { step: "02", title: "방문·견적", desc: "예약 후 센터 방문,\n입소 비용과 일정을 안내받습니다" },
+    { step: "03", title: "입소·매칭", desc: "케어 후 적합한 가족에게\n무료분양·입양을 연결합니다" },
   ],
   [
-    { step: "01", title: "온라인·전화 상담", desc: "관심 분야와 생활 환경을 파악합니다" },
-    { step: "02", title: "보호소 방문", desc: "아이들과 직접 만나 성향을 확인합니다" },
-    { step: "03", title: "입양·사후 관리", desc: "입양 후에도 상담을 지원합니다" },
+    { step: "01", title: "온라인·전화 상담", desc: "파양 사유와 생활 환경을\n파악합니다" },
+    { step: "02", title: "센터 방문", desc: "아이와 직접 만나\n입소 견적을 확인합니다" },
+    { step: "03", title: "분양·사후 관리", desc: "매칭 후에도\n상담을 지원합니다" },
   ],
   [
-    { step: "01", title: "후원·봉사 문의", desc: "참여 방식을 안내해 드립니다" },
-    { step: "02", title: "활동·후원 진행", desc: "봉사 일정 또는 후원을 시작합니다" },
-    { step: "03", title: "정기 소식 공유", desc: "보호 현황과 활동 소식을 전합니다" },
+    { step: "01", title: "무료분양 문의", desc: "희망 조건과\n생활 환경을 알려주세요" },
+    { step: "02", title: "만남·상담", desc: "아이들과 직접 만나\n성향을 확인합니다" },
+    { step: "03", title: "입양·적응 확인", desc: "입양 후 적응 상태를\n함께 확인합니다" },
   ],
 ];
 
 const REVIEW_POOL: TenantReviewItem[] = [
   {
     name: "이*진",
-    business: "강아지 입양",
-    text: "상담부터 입양 후 관리까지 세심하게 챙겨주셔서 우리 가족에게 완벽한 친구를 만났습니다.",
+    business: "강아지 파양",
+    text: "이민 준비로 더 이상 함께할 수 없어 맡겼는데, 입소 비용을 항목별로 투명하게 안내해 주셔서 안심했습니다.",
     rating: 5,
   },
   {
     name: "박*수",
-    business: "고양이 입양",
-    text: "처음 반려동물을 키우는 거라 걱정이 많았는데, 성향 매칭과 입양 후 상담이 큰 도움이 됐어요.",
+    business: "고양이 무료분양",
+    text: "고양이 무료분양을 희망했는데 성향에 맞는 가족을 찾아주셨습니다. 상담 응답도 빠르고 친절했습니다.",
     rating: 5,
   },
   {
     name: "최*영",
-    business: "임시보호",
-    text: "긴급 구조된 아이를 임시로 맡았다가 정이 들어 입양하게 됐습니다. 보호소 분들이 정말 따뜻하세요.",
+    business: "강아지 무료분양",
+    text: "이사로 키울 공간이 없어 파양을 고민하다 입소했습니다. 아이 상태 사진을 자주 보내주셔서 마음이 놓였습니다.",
     rating: 5,
   },
   {
     name: "김*호",
-    business: "정기 후원",
-    text: "후원금 사용 내역을 투명하게 공개해 주셔서 믿고 후원할 수 있습니다.",
+    business: "고양이 파양",
+    text: "알러지가 심해져 파양했습니다. 가정묘 파양이라는 점을 이해해 주시고 세심하게 케어해 주셨어요.",
     rating: 5,
   },
   {
     name: "정*미",
-    business: "봉사 참여",
-    text: "주말 산책 봉사에 참여했는데 아이들이 너무 사랑스러웠어요. 다음에도 꼭 다시 오겠습니다.",
+    business: "강아지 무료입양",
+    text: "가정에서 키우던 강아지를 무료입양 받았습니다. 입양 전·후 상담이 꼼꼼해서 믿을 수 있었습니다.",
     rating: 5,
   },
   {
     name: "한*우",
-    business: "노견 입양",
-    text: "나이 든 아이를 입양하기 어려울 줄 알았는데, 맞춤 상담 덕분에 행복하게 지내고 있어요.",
+    business: "군입대 파양",
+    text: "입대 전에 맡길 곳을 찾다가 상담했습니다. 현실적인 입소 비용만 안내받고, 제대 후에도 아이 소식을 들을 수 있어 감사합니다.",
     rating: 5,
   },
   {
     name: "윤*아",
-    business: "가족 입양",
-    text: "아이들과 함께 방문했는데 보호소 분들이 친절하게 안내해 주셔서 좋은 경험이었습니다.",
+    business: "고양이 무료분양",
+    text: "다묘 가정이라 분양을 맡겼는데, 3주 만에 좋은 분을 연결해 주셨습니다.",
     rating: 5,
   },
   {
     name: "서*현",
-    business: "후원·봉사",
-    text: "정기 후원과 봉사를 병행하고 있는데, 보호 동물들의 변화를 보며 보람을 느낍니다.",
+    business: "강아지 파양",
+    text: "노령견이라 케어가 힘들어 입소했습니다. 건강검진부터 일상 케어까지 꼼꼼해서 믿고 맡길 수 있었습니다.",
+    rating: 5,
+  },
+  {
+    name: "조*민",
+    business: "고양이 파양",
+    text: "무료 입소를 내세우는 곳과 달리, 처음부터 비용을 솔직히 알려주셔서 신뢰가 갔습니다.",
+    rating: 5,
+  },
+  {
+    name: "강*희",
+    business: "강아지 무료분양",
+    text: "파양견 무료분양을 받았는데 아이 성향 설명이 정확했고, 적응 상담도 도움이 됐습니다.",
+    rating: 5,
+  },
+  {
+    name: "오*준",
+    business: "이사 파양",
+    text: "전세 계약 문제로 이사가 급해졌는데, 2시간 내 상담 연락을 받고 바로 입소 일정을 잡았습니다.",
+    rating: 5,
+  },
+  {
+    name: "신*래",
+    business: "고양이 무료입양",
+    text: "처음 고양이를 키우는데 맞춤 상담 덕분에 우리 집 환경에 잘 맞는 아이를 만났습니다.",
     rating: 5,
   },
 ];
 
 const CASE_TEMPLATES = [
-  { title: "{region} 길고양이 구조·입양", type: "구조·입양" },
-  { title: "{region} 유기견 치료·재활", type: "치료·재활" },
-  { title: "{region} 새끼 고양이 임시보호", type: "임시보호" },
-  { title: "{region} 노견·노묘 평생 보호", type: "평생 보호" },
-  { title: "{region} 중형견 가족 입양", type: "입양 성공" },
-  { title: "{region} 긴급 구조·수술", type: "구조·의료" },
-  { title: "{region} 봉사단체 산책", type: "봉사·활동" },
-  { title: "{region} 후원 의료비 지원", type: "후원·치료" },
-  { title: "{region} 반려묘 입양 매칭", type: "입양·매칭" },
-  { title: "{region} 겨울철 길고양이 보호", type: "계절 보호" },
-  { title: "{region} 장애견 특별 케어", type: "특별 케어" },
-  { title: "{region} 임보 가정 연계", type: "임시보호" },
-  { title: "{region} 입양 후 상담 지원", type: "사후 관리" },
-  { title: "{region} 어린이 봉사 체험", type: "교육·봉사" },
-  { title: "{region} 보호소 시설 개선", type: "시설·후원" },
-  { title: "{region} 유기묘 중성화", type: "의료·예방" },
-  { title: "{region} 지역 구조 네트워크", type: "구조·협력" },
-  { title: "{region} 정기 후원자 케어", type: "후원·운영" },
-  { title: "{region} 다묘 가정 입양", type: "입양 성공" },
-  { title: "{region} 유기동물 교육", type: "교육·홍보" },
+  { title: "{region} 이민 전 강아지 파양", type: "강아지파양" },
+  { title: "{region} 군입대 고양이 파양", type: "고양이파양" },
+  { title: "{region} 이사로 인한 강아지 무료분양", type: "강아지무료분양" },
+  { title: "{region} 알러지 발현 고양이 파양", type: "고양이파양" },
+  { title: "{region} 임신·출산 파양 입소", type: "강아지파양" },
+  { title: "{region} 노령견 장기 위탁", type: "강아지파양" },
+  { title: "{region} 다묘 가정 고양이 무료분양", type: "고양이무료분양" },
+  { title: "{region} 유학 전 반려견 파양", type: "강아지파양" },
+  { title: "{region} 중형견 무료분양 매칭", type: "강아지무료분양" },
+  { title: "{region} 거주환경 변화 파양", type: "고양이파양" },
+  { title: "{region} 맞춤 강아지 무료입양", type: "강아지무료입양" },
+  { title: "{region} 입소 후 분양 완료", type: "무료분양 완료" },
+  { title: "{region} 다견 갈등 분리 파양", type: "강아지파양" },
+  { title: "{region} 보호자 질병 파양 상담", type: "고양이파양" },
+  { title: "{region} 고양이 무료입양", type: "고양이무료입양" },
+  { title: "{region} 해외 발령 파양", type: "강아지파양" },
+  { title: "{region} 입소 건강검진·케어", type: "입소·케어" },
+  { title: "{region} 투명 입소비 안내", type: "입소·상담" },
+  { title: "{region} 장기 입소 위탁", type: "강아지파양" },
+  { title: "{region} 분양 후 사후 상담", type: "사후관리" },
 ];
 
 function pickCases(
@@ -362,7 +386,7 @@ export function pickTenantContentPackage(
   const casesCount = pickOne([...CASES_COUNT_OPTIONS], rng);
   const heroImageIndex = Math.floor(rng() * maxImages) + 1;
   const supportImageIndex = Math.floor(rng() * maxImages) + 1;
-  const reviews = shuffle(REVIEW_POOL, rng).slice(0, 4 + Math.floor(rng() * 3));
+  const reviews = shuffle(REVIEW_POOL, rng).slice(0, 3 + Math.floor(rng() * 7));
 
   const base: TenantContentData = {
     siteDesign,

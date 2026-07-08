@@ -18,7 +18,7 @@ export default async function ReviewsSection() {
             실제 이용 고객 만족도{" "}
             <span className="text-orange">{satisfaction}</span>
           </h2>
-          <p className="text-gray-600">폐업·철거를 경험하신 분들의 후기입니다</p>
+          <p className="text-gray-600">파양·무료분양·입양 상담을 이용하신 분들의 후기입니다</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

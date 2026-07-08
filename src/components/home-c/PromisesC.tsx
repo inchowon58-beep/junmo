@@ -3,21 +3,39 @@ import { getResolvedSiteConfig } from "@/utils/siteConfig";
 const DEFAULT_PROMISES = [
   {
     num: "01",
-    title: "생명을 최우선으로",
+    title: "현실적인 입소 비용",
     description:
-      "모든 보호 동물에게 충분한 식사, 치료, 사랑을 제공합니다. 건강 검진과 예방접종을 철저히 관리합니다.",
+      "모든 사설 보호소에는 관리 비용이 발생합니다. 항목별로 투명하게 안내하며, 고객이 납득할 수 있는 수준의 입소 비용만 받습니다.",
   },
   {
     num: "02",
-    title: "책임 있는 입양",
+    title: "아이 중심의 환경",
     description:
-      "입양 전·후 상담과 맞춤 매칭으로 동물과 가족 모두가 행복한 만남이 되도록 돕습니다.",
+      "과밀 수용 없이 고양이·소형견·중대형견 각각에 맞는 넓고 쾌적한 공간에서 케어합니다.",
   },
   {
     num: "03",
-    title: "투명한 운영",
+    title: "쾌적한 웰빙 케어",
     description:
-      "후원금 사용 내역과 보호 현황을 정기적으로 공개합니다. 믿고 함께할 수 있는 보호소가 되겠습니다.",
+      "산책, 놀이, 목욕, 미용, 건강검진 등 다양한 프로그램으로 입소 아이가 편안한 일상을 보냅니다.",
+  },
+  {
+    num: "04",
+    title: "주인의 마음을 생각하는 투명함",
+    description:
+      "입소된 아이의 생활 사진을 정기적으로 공유합니다. 방문 미팅과 상담을 언제든 환영합니다.",
+  },
+  {
+    num: "05",
+    title: "광범위한 분양·입양 매칭",
+    description:
+      "신원 확인과 심층 상담을 거쳐 아이를 사랑할 수 있는 가족에게 연결합니다.",
+  },
+  {
+    num: "06",
+    title: "입양 후 사후 관리",
+    description:
+      "분양·입양 이후에도 아이의 적응 상태를 확인합니다. 다시 함께하기 어려운 경우에도 책임지고 상담합니다.",
   },
 ];
 
@@ -30,10 +48,10 @@ export default async function PromisesC() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-xs tracking-[0.25em] uppercase text-stone-400 mb-3">Our Promises</p>
         <h2 className="home-c-editorial text-3xl sm:text-4xl font-light text-stone-900 mb-4">
-          세 가지 약속
+          여섯 가지 특별함
         </h2>
         <p className="text-stone-500 text-sm mb-16">
-          이 약속은 한 번도 깨진 적이 없습니다. 앞으로도 그럴 것입니다.
+          8,400건 이상의 파양 상담, 3,200건 이상의 분양·입양 매칭 경험을 바탕으로 운영합니다.
         </p>
 
         <div className="space-y-16 lg:space-y-20">
@@ -41,7 +59,7 @@ export default async function PromisesC() {
             <article key={item.num} className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-start border-t border-stone-100 pt-10 first:border-t-0 first:pt-0">
               <p className="lg:col-span-2 text-sm text-stone-400 font-medium">{item.num}</p>
               <div className="lg:col-span-10">
-                <p className="text-xs text-stone-400 mb-2">— 약속 {item.num}</p>
+                <p className="text-xs text-stone-400 mb-2">— 특별함 {item.num}</p>
                 <h3 className="text-xl sm:text-2xl font-medium text-stone-900 mb-4">{item.title}</h3>
                 <p className="text-stone-600 leading-relaxed max-w-xl">{item.description}</p>
               </div>

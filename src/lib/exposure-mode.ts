@@ -23,15 +23,15 @@ export function inquiryHref(pathname: string): string {
 
 export function inquiryButtonLabel(mode: ExposureMode, context: "header" | "floating" | "cta"): string {
   if (mode === "cpa") {
-    if (context === "header") return "빠른 문의 신청하기";
-    return "입양·후원 문의하기";
+    if (context === "header") return "빠른 상담 신청하기";
+    return "파양·분양 상담하기";
   }
-  if (context === "header" || context === "floating") return "입양·후원 문의";
-  return "입양·후원 문의";
+  if (context === "header" || context === "floating") return "파양·분양 상담";
+  return "파양·분양 상담";
 }
 
 export function inquiryFormTitle(mode: ExposureMode): string {
-  return mode === "cpa" ? "입양·후원 빠른 문의" : "입양·후원 문의하기";
+  return mode === "cpa" ? "파양·분양 빠른 상담" : "파양·분양 상담하기";
 }
 
 /** CPA: 주황(기본) / 업체정보: 검정(보조) */

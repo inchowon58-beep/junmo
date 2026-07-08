@@ -14,14 +14,14 @@ export default async function ContactC() {
             <p className="text-xs tracking-[0.25em] uppercase text-stone-500 mb-4">
               {site.brandName}
             </p>
-            <p className="text-sm text-stone-400 mb-2">— 유기동물 보호 단체</p>
+            <p className="text-sm text-stone-400 mb-2">— 강아지·고양이 파양·무료분양 전문</p>
             <h2 className="home-c-editorial text-3xl sm:text-4xl font-light leading-[1.2] mb-6">
               언제든 편하게
               <br />
               연락주세요.
             </h2>
             <p className="text-stone-400 text-sm leading-relaxed mb-12">
-              입양, 후원, 봉사, 임시보호 — 궁금한 점이 있으시면 문의해 주세요.
+              강아지파양, 고양이파양, 강아지무료분양, 고양이무료분양 상담 — 궁금한 점이 있으시면 문의해 주세요.
             </p>
 
             <dl className="space-y-6 text-sm">

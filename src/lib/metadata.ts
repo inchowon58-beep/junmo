@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { SiteConfig } from "./site-config-types";
+import { pickSeoSuffixKeywords } from "./seo-title-keywords";
 import { NAVER_SITE_VERIFICATION } from "./constants";
 import { getSiteUrl } from "./site-url";
 
@@ -93,24 +94,25 @@ export function buildPageMetadata(
 export function buildSiteMetadata(config: SiteConfig): Metadata {
   const images = buildOgImageMeta(config, "/opengraph-image", config.brandName);
   const baseUrl = getSiteUrl(config);
+  const suffixKeywords = pickSeoSuffixKeywords(config.brandName, 3);
+  const defaultTitle = `${config.brandName} | 강아지·고양이 파양·무료분양 · ${suffixKeywords.join("·")}`;
 
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: `${config.brandName} | 유기동물 보호·입양`,
+      default: defaultTitle,
       template: `%s | ${config.brandName}`,
     },
     description: config.description,
     keywords: [
       config.brandName,
-      "유기동물",
-      "반려동물 입양",
-      "동물보호소",
-      "임시보호",
-      "후원",
-      "봉사",
-      "유기견",
-      "유기묘",
+      "강아지파양",
+      "고양이파양",
+      "강아지무료분양",
+      "고양이무료분양",
+      "강아지보호소",
+      "고양이보호소",
+      ...suffixKeywords,
     ],
     alternates: {
       canonical: baseUrl,

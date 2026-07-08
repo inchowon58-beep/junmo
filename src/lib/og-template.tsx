@@ -57,7 +57,7 @@ export function OgBrandedLayout({
           <div style={{ color: OG_COLORS.white, fontSize: 36, fontWeight: 800 }}>
             {brandName}
           </div>
-          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>유기동물 보호 · 입양</div>
+          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>강아지·고양이 파양 · 무료분양</div>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export function OgBrandedLayout({
       </div>
 
       <div style={{ color: OG_COLORS.gray, fontSize: 20 }}>
-        입양 · 후원 · 봉사 상담
+        파양 · 무료분양 · 입양 상담
       </div>
     </div>
   );

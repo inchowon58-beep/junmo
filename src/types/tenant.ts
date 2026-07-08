@@ -59,6 +59,8 @@ export interface TenantContentData {
   missionBody?: string;
   storyTitle?: string[];
   promises?: { num: string; title: string; description: string }[];
+  /** C 디자인 — 파양 이용 시나리오 */
+  scenarioItems?: { title: string; description: string }[];
   /** D 디자인 — 프리미엄 캐터리 스타일 */
   heroEyebrow?: string;
   serviceCards?: { title: string; englishLabel: string; description: string; imageIndex: number }[];

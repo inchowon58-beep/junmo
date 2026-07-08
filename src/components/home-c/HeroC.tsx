@@ -7,16 +7,16 @@ export default async function HeroC() {
   const site = await getSiteConfig();
   const { tenantUi } = await getResolvedSiteConfig();
 
-  const lines = tenantUi?.heroLines || ["사랑은", "두 번째", "시작이기도."];
+  const lines = tenantUi?.heroLines || ["함께할 수 없을 때,", "버리지 말고", "파양 상담을."];
   const subline =
     tenantUi?.heroSubline ||
-    `${site.brandName}에서 작은 생명들이 새 가족을 기다리고 있습니다. 따뜻한 손길이 필요해요.`;
+    `${site.brandName}은 강아지·고양이 파양 입소와 무료분양·무료입양 매칭을 현실적인 입소 비용으로 진행합니다.`;
 
   return (
     <section className="home-c-hero relative py-20 lg:py-32">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <p className="text-xs tracking-[0.25em] uppercase text-stone-400 mb-8">
-          유기동물 보호 · {site.brandName}
+          강아지·고양이 파양 · {site.brandName}
         </p>
 
         <h1 className="home-c-editorial text-4xl sm:text-5xl lg:text-7xl font-light text-stone-900 leading-[1.15] tracking-tight mb-8">
@@ -35,7 +35,7 @@ export default async function HeroC() {
           href="/#cases"
           className="inline-flex items-center gap-2 text-sm text-stone-700 hover:text-orange transition group"
         >
-          <span>보호 사례 보기</span>
+          <span>파양·분양 사례 보기</span>
           <span className="group-hover:translate-x-0.5 transition-transform">↘</span>
         </Link>
 
@@ -44,7 +44,7 @@ export default async function HeroC() {
             href={`/#${INQUIRY_SECTION_ID}`}
             className={`inline-flex items-center gap-2 font-medium px-7 py-3.5 rounded-full transition text-sm ${inquiryAccentButtonClass(site.exposureMode)}`}
           >
-            입양·후원 문의
+            파양·분양 상담
           </Link>
         </div>
       </div>

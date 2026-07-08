@@ -95,7 +95,7 @@ export async function getResolvedSiteConfig(
       { siteDesign: "c" },
       "agapet-shelter",
       baseConfig.brandName,
-      "아가펫보호소,유기동물,입양,후원,봉사,임시보호",
+      "아가펫보호소,강아지파양,고양이파양,강아지무료분양,고양이무료분양",
       baseConfig.description,
       baseConfig.imageCount
     );
@@ -116,7 +116,7 @@ export async function getResolvedSiteConfig(
         { siteDesign: "c" },
         hostname || "agapet-shelter",
         baseConfig.brandName,
-        "아가펫보호소,유기동물,입양,후원,봉사",
+        "아가펫보호소,강아지파양,고양이파양,강아지무료분양,고양이무료분양",
         baseConfig.description,
         baseConfig.imageCount
       );

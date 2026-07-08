@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pickSeoSuffixKeywords, buildTitleWithSeoSuffix } from "@/lib/seo-title-keywords";
 import HomeSections, { HomeLeadBlocks } from "@/components/HomeSections";
 import HomePageB from "@/components/home-b/HomePageB";
 import HomePageC from "@/components/home-c/HomePageC";
@@ -10,12 +11,20 @@ import { getResolvedSiteConfig } from "@/utils/siteConfig";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getSiteConfig();
-  return buildPageMetadata(config, {
-    title: `${config.brandName} | 유기동물 보호·입양 전문`,
-    description: config.description,
-    path: "/",
-    ogPath: "/opengraph-image",
-  });
+  const pageTitle = `${config.brandName} | 강아지·고양이 파양·무료분양`;
+  const browserTitle = buildTitleWithSeoSuffix(pageTitle, config.brandName);
+  const suffixKeywords = pickSeoSuffixKeywords(config.brandName, 3);
+
+  return {
+    ...buildPageMetadata(config, {
+      title: pageTitle,
+      description: config.description,
+      path: "/",
+      ogPath: "/opengraph-image",
+      keywords: [config.brandName, "강아지파양", "고양이파양", "강아지무료분양", "고양이무료분양", ...suffixKeywords],
+    }),
+    title: { absolute: browserTitle },
+  };
 }
 
 export default async function HomePage() {

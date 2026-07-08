@@ -7,10 +7,12 @@ import InquiryLinkButton from "@/components/InquiryLinkButton";
 import { showCompanyContact } from "@/lib/exposure-mode";
 
 const NAV = [
-  { href: "/#story", label: "우리 이야기" },
-  { href: "/#cases", label: "보호 사례" },
-  { href: "/#support", label: "후원·봉사" },
-  { href: "/#process", label: "입양 절차" },
+  { href: "/#story", label: "센터 소개" },
+  { href: "/#scenarios", label: "파양 안내" },
+  { href: "/#cases", label: "파양·분양" },
+  { href: "/#support", label: "입소 비용" },
+  { href: "/#reviews", label: "이용후기" },
+  { href: "/#process", label: "상담 절차" },
   { href: "/#contact", label: "문의" },
 ] as const;
 
@@ -28,7 +30,7 @@ export default function HeaderC() {
               {site.brandName}
             </span>
             <span className="block text-[10px] text-stone-400 tracking-[0.2em] uppercase">
-              Animal Shelter
+              Pet Care Center
             </span>
           </Link>
 

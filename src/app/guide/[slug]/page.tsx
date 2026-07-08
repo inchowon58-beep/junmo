@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "페이지를 찾을 수 없습니다" };
 
   const resolved = resolveSeoPage(page, config);
-  const browserTitle = buildSeoBrowserTitle(resolved.title, config.brandName);
+  const browserTitle = buildSeoBrowserTitle(resolved.title, config.brandName, page.keyword || page.slug);
   return {
     ...buildPageMetadata(config, {
       title: resolved.title,
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       path: guidePageUrl(page.slug),
       ogPath: `/guide/${page.slug}/opengraph-image`,
       type: "article",
-      keywords: [page.keyword, "폐업철거", config.brandName],
+      keywords: [page.keyword, "강아지파양", "고양이파양", config.brandName],
     }),
     title: { absolute: browserTitle },
   };
@@ -75,7 +75,7 @@ export default async function GuidePage({ params }: Props) {
             .replace(/\{\{supportMax\}\}/g, config.supportMax),
         }));
 
-  const brandShort = config.brandName.replace(/철거$/, "") || "19";
+  const brandShort = config.brandName.slice(0, 2) || "아가";
   const showCompany = showCompanyContact(config.exposureMode);
 
   return (
@@ -90,7 +90,7 @@ export default async function GuidePage({ params }: Props) {
             {showCompany && (
               <p className="text-sm text-gray-300">{config.companyName}</p>
             )}
-            <p className="text-sm text-orange">폐업철거 전문 · 폐업지원금 원스톱</p>
+            <p className="text-sm text-orange">강아지·고양이 파양 · 무료분양 전문</p>
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default async function GuidePage({ params }: Props) {
         <div className="mt-10 text-center bg-dark rounded-2xl p-8 text-white">
           <h2 className="text-xl font-bold mb-3">{page.keyword} 상담</h2>
           <p className="text-gray-300 mb-6 text-sm">
-            {config.brandName} · 무료 방문 견적 · 폐업지원금 최대 {config.supportMax}
+            {config.brandName} · 파양·무료분양 상담 · 입소비 {config.supportBase}부터
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {showCompany && (

@@ -31,10 +31,10 @@ export interface SiteConfig {
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   brandName: "아가펫보호소",
-  companyName: "사단법인 아가펫",
-  tagline: "버려지지 않는 생명, 함께하는 두 번째 가족",
+  companyName: "아가펫보호소",
+  tagline: "강아지·고양이 파양·무료분양 전문",
   description:
-    "유기·유실 반려동물을 보호하고 건강하게 회복시켜 새 가족을 찾아주는 아가펫보호소입니다. 입양·임시보호·후원·봉사 상담을 환영합니다.",
+    "아가펫보호소는 강아지파양, 고양이파양, 강아지무료분양, 고양이무료분양을 전문으로 하는 프리미엄 요양보육 센터입니다. 이민·이사·군입대 등 더 이상 함께하기 어려운 가정견·가정묘의 파양 입소와 새 가족 매칭을 현실적인 입소 비용으로 진행합니다.",
   url: "https://sim-seven-woad.vercel.app",
   phone: "1555-7321",
   email: "agapet@shelter.kr",
@@ -43,9 +43,9 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   representative: "김아가",
   imageCdn: "https://image.cattery.co.kr/dogboho",
   imageCount: 20,
-  supportBase: "임시보호",
-  supportExtra: "입양상담",
-  supportMax: "후원·봉사",
+  supportBase: "15만원대~",
+  supportExtra: "35만원대~",
+  supportMax: "상담 후 안내",
   geminiApiKey: "",
   naverClientId: "",
   naverClientSecret: "",

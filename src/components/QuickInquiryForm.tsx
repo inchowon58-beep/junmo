@@ -123,7 +123,7 @@ export default function QuickInquiryForm({
           <h2 className="text-xl lg:text-2xl font-bold">{formTitle}</h2>
         </div>
         <p className="text-sm text-white/90 mt-2">
-          {keyword} · 입양 · 후원 · 봉사 상담
+          {keyword} · 파양 · 무료분양 · 입양 상담
         </p>
       </div>
 
@@ -171,7 +171,7 @@ export default function QuickInquiryForm({
               type="text"
               value={businessType}
               onChange={(e) => setBusinessType(e.target.value)}
-              placeholder="예: 입양, 후원, 봉사, 임시보호"
+              placeholder="예: 강아지파양, 고양이무료분양, 무료입양"
               className={inputClass}
             />
           </div>
@@ -190,7 +190,7 @@ export default function QuickInquiryForm({
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="입양 희망, 후원·봉사 문의 등 자유롭게 남겨주세요."
+              placeholder="파양·무료분양·입양 문의 내용을 남겨주세요."
               rows={3}
               className={`${inputClass} resize-y`}
             />

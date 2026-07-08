@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getSiteConfig } from "@/lib/site-config";
 import { OgBrandedLayout, OG_SIZE } from "@/lib/og-template";
 
-export const alt = "아가펫보호소 유기동물 보호·입양";
+export const alt = "아가펫보호소 강아지·고양이 파양·무료분양";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 
@@ -13,9 +13,9 @@ export default async function OpenGraphImage() {
     (
       <OgBrandedLayout
         brandName={config.brandName}
-        title="유기동물 보호 · 입양"
+        title="강아지·고양이 파양 · 무료분양"
         subtitle={config.description.slice(0, 80)}
-        badge="입양·후원 상담"
+        badge="파양·분양 상담"
       />
     ),
     {

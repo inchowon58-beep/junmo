@@ -16,17 +16,17 @@ export default function FooterC() {
           <div>
             <p className="text-2xl font-light text-white mb-1">{site.brandName}</p>
             <p className="text-xs tracking-[0.2em] uppercase text-stone-600 mb-6">
-              Animal Shelter
+              Pet Care Center
             </p>
             <blockquote className="text-sm leading-relaxed text-stone-500 italic">
-              &ldquo;버려지지 않는 생명,
+              &ldquo;더 이상 함께하기 어려울 때,
               <br />
-              <em className="not-italic text-stone-400">함께하는</em> 두 번째 가족.&rdquo;
+              <em className="not-italic text-stone-400">안전한 파양·분양</em>을 돕습니다.&rdquo;
             </blockquote>
           </div>
           <div className="flex flex-col justify-end">
             <p className="text-xs tracking-[0.2em] uppercase text-stone-600 mb-4">
-              {site.brandName} · 함께 걷는 사람들
+              {site.brandName} · 강아지·고양이 파양·무료분양
             </p>
             {showCompany && (
               <Link
