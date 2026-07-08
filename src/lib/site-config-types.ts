@@ -41,7 +41,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
   address: "경기도 양평군 (방문은 사전 예약제)",
   businessNumber: "",
   representative: "김아가",
-  imageCdn: "/images",
+  imageCdn: "https://image.cattery.co.kr/dogboho",
   imageCount: 20,
   supportBase: "임시보호",
   supportExtra: "입양상담",
