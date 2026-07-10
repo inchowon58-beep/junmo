@@ -11,8 +11,10 @@ import {
 } from "@/lib/site-config";
 import { getResolvedSiteConfig } from "@/utils/siteConfig";
 import { extractRegionFromKeyword } from "@/lib/region-parse";
-import { getNearbyRegionLinks } from "@/lib/nearby-regions";
+import { getNearbySubRegionLinks } from "@/lib/nearby-regions";
+import { getRelatedKeywordPageLinks } from "@/lib/related-keyword-pages";
 import NearbyRegionsSection from "@/components/NearbyRegionsSection";
+import RelatedKeywordPagesSection from "@/components/RelatedKeywordPagesSection";
 import LocalPartnersSection from "@/components/LocalPartnersSection";
 import QuickInquiryForm from "@/components/QuickInquiryForm";
 import { buildSeoBrowserTitle } from "@/lib/seo-keyword";
@@ -63,7 +65,10 @@ export default async function GuidePage({ params }: Props) {
     config
   );
   const currentRegion = extractRegionFromKeyword(page.keyword) || localRegion;
-  const nearbyRegions = await getNearbyRegionLinks(currentRegion, page.slug, config);
+  const [relatedKeywordLinks, nearbySubRegions] = await Promise.all([
+    getRelatedKeywordPageLinks(page.slug, page.keyword, 30),
+    getNearbySubRegionLinks(currentRegion, page.slug, page.keyword),
+  ]);
   const faqs =
     resolved.faqs?.length >= 3
       ? resolved.faqs.slice(0, 3)
@@ -154,7 +159,12 @@ export default async function GuidePage({ params }: Props) {
           </div>
         </div>
 
-        <NearbyRegionsSection regions={nearbyRegions} />
+        <RelatedKeywordPagesSection links={relatedKeywordLinks} />
+
+        <NearbyRegionsSection
+          cityLabel={nearbySubRegions.cityLabel}
+          regions={nearbySubRegions.regions}
+        />
 
         {localRegion && (
           <LocalPartnersSection
