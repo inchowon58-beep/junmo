@@ -405,13 +405,16 @@ export function pickTenantContentPackage(
         ? `${seed}:design-c`
         : siteDesign === "d"
           ? `${seed}:design-d`
-          : seed;
+          : siteDesign === "e"
+            ? `${seed}:design-e`
+            : seed;
   const layoutSeed = hashString(designSeed);
   const rng = createRng(layoutSeed);
   const isDesignB = siteDesign === "b";
   const isDesignC = siteDesign === "c";
   const isDesignD = siteDesign === "d";
-  const isAltDesign = isDesignB || isDesignC || isDesignD;
+  const isDesignE = siteDesign === "e";
+  const isAltDesign = isDesignB || isDesignC || isDesignD || isDesignE;
   const maxImages = Math.max(4, imageCount);
   const region = extractRegion(keywords, siteName);
   const firstKeyword = keywords.split(/[,\n]/)[0]?.trim() || siteName;
@@ -482,6 +485,22 @@ export function pickTenantContentPackage(
       casesItems
     );
     return { ...base, ...dExtras };
+  }
+
+  if (isDesignE) {
+    return {
+      ...base,
+      headerStyle: "sticky",
+      sectionOrder: [],
+      designVariant: "modern",
+      tagline: "2026 서귀포시 우수공인중개사 · 제주 부동산 신뢰 중개",
+      heroHeadline: `${siteName} | 공인중개 신뢰 상담`,
+      heroSubcopy: "투명한 상담과 지역 밀착 중개",
+      description:
+        about.slice(0, 160) ||
+        `${siteName} — 제주·서귀포 공인중개사 신뢰 소개 및 상담 안내`,
+      heroBadge: "2026 서귀포시 우수공인중개사",
+    };
   }
 
   return {

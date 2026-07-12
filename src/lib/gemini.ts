@@ -14,7 +14,6 @@ interface GenerateOptions {
   keyword: string;
   apiKey: string;
   site: SiteConfig;
-  /** 서브도메인(테넌트) 홈 페이지 맥락 — 생성 시 톤·지역·소개 반영 */
   siteBrief?: {
     keywords?: string;
     aboutText?: string;
@@ -33,46 +32,41 @@ export interface GeneratedSeoContent {
 
 const CONTENT_RULES = `
 작성 조건:
+- 전달된 키워드를 중심으로 한 **검색 최적화 문서**로 작성 (메인 홈페이지 소개글처럼 쓰지 말 것)
 - 키워드를 자연스럽게 본문 전체에 5~8회 포함
-- 업체명·전화번호는 반드시 {{brandName}}, {{phone}} 등 토큰으로만 표기 (직접 입력 금지)
-- 강아지파양, 고양이파양, 강아지무료분양, 고양이무료분양, 파양 입소, 무료입양 관점으로 작성
-- 후원, 봉사, 구조, 유기, 유실, 비영리 보호단체, 임시보호 표현 사용 금지
-- 견적이라는 단어 사용 금지 (입소 비용, 비용 안내 등으로 표현)
-- 파양 = 가정에서 키우던 아이를 더 이상 함께할 수 없을 때 맡기는 것 (이민, 이사, 군입대, 알러지 등)
-- 무료분양 = 가정견·가정묘가 새 가족을 찾는 것
-- 입소 비용은 사설 보호소 특성상 발생하며, 현실적·투명한 비용 안내 강조
-- 신뢰감 있는 전문가 톤, 허위·과장 금지. 수치(상담 건수, 만족도 등)로 신뢰감 표현
+- 업체명·전화번호·주소는 반드시 {{brandName}}, {{phone}}, {{address}} 등 토큰으로만 표기 (직접 입력 금지)
+- 제주·서귀포 공인중개·부동산 중개·매매·전세·월세·상담 관점으로 작성
+- 허위·과장·확정 수익 보장 표현 금지
+- 신뢰감 있는 전문가 톤
 - h2, h3, p, ul 태그만 사용 (img 태그 직접 사용 금지)
-- 본문 순수 텍스트 기준 **2800자 이상** (짧으면 안 됨)
-- h2 섹션 **최소 5개**, 각 섹션마다 p 2~3문단 또는 ul 목록 포함
-- 이미지는 시스템에서 본문에 자동 삽입되므로 img 태그·이미지 플레이스홀더 사용 금지
-- 다른 SEO 페이지와 문장·사례·섹션 순서가 겹치지 않게 작성
-- 자주 묻는 질문(FAQ) 3개: 키워드와 관련된 실질적 질문과 답변 (답변 2문장 이상, 토큰 사용)
-- 제목: 지역명을 두 번 반복하지 말 것
-- 제목: 다른 페이지와 같은 패턴·같은 문장 구조 금지
-- 제목: {{brandName}}·상호명은 제목에 넣지 말 것 (시스템이 자동 추가)
-- 제목: 반드시 지역명 1회 포함 (지역 맥락이 있을 때)
-- 본문 h2/h3: 지역명 2회 연속 금지
+- 본문 순수 텍스트 기준 **2200자 이상**
+- h2 소제목 **정확히 4개** (많거나 적으면 안 됨). 각 소제목 아래 p 2문단 이상 또는 ul 포함
+- 이미지는 시스템에서 본문에 자동 삽입되므로 img·플레이스홀더 사용 금지
+- 다른 SEO 페이지와 문장·사례·섹션 제목·구성이 겹치지 않게 작성 (매번 새로 쓸 것)
+- 자주 묻는 질문(FAQ) **정확히 2개**: 키워드와 관련된 실질적 질문·답변 (답변 2문장 이상, 토큰 사용)
+- 제목: 지역명 반복 금지, 상호명·| 구분자 금지 (시스템이 상호 추가)
+- 제목: 다른 페이지와 같은 패턴·문장 구조 금지
+- 제목: 지역 맥락이 있으면 지역명 1회 포함
 `;
 
 const WRITING_ANGLES = [
-  "파양 보호자 관점에서 입소 절차·비용·케어를 중심으로",
-  "무료분양 희망자 관점에서 매칭·상담·사후 관리를 중심으로",
-  "이민·이사·군입대 등 파양 사유별 맞춤 안내를 중심으로",
-  "입소 비용 투명성과 올바른 보호소 선택 기준을 중심으로",
-  "강아지·고양이 무료입양 절차와 준비 사항을 중심으로",
-  "프리미엄 요양보육 환경과 케어 프로그램을 중심으로",
+  "매수·매도 상담 절차와 체크포인트를 중심으로",
+  "전세·월세 계약 시 확인해야 할 권리관계를 중심으로",
+  "지역 생활권·교통·시세를 이해하는 관점으로",
+  "중개 수수료·일정·계약 단계를 투명하게 안내하는 관점으로",
+  "이주·원거리 상담·서류 확인을 중심으로",
+  "안전한 잔금·인도·사후 문의까지 동행하는 관점으로",
 ];
 
 const TITLE_STYLE_HINTS = [
-  "파양 입소 상담 강조형",
-  "무료분양·무료입양 강조형",
-  "입소 비용 투명 안내형",
-  "지역 파양·분양 안내형",
-  "가정견·가정묘 파양형",
-  "책임 매칭·사후 관리형",
-  "프리미엄 요양보육 강조형",
-  "이민·이사·군입대 파양형",
+  "중개 상담 가이드형",
+  "지역 생활권 안내형",
+  "계약 전 체크리스트형",
+  "매매·임대 비교형",
+  "권리관계 확인 강조형",
+  "실무 절차 안내형",
+  "초보 거래자 친절 안내형",
+  "지역 특화 인사이트형",
 ];
 
 function hashKeyword(keyword: string): number {
@@ -85,8 +79,7 @@ function hashKeyword(keyword: string): number {
 }
 
 function pickAngle(keyword: string): string {
-  const idx = hashKeyword(keyword) % WRITING_ANGLES.length;
-  return WRITING_ANGLES[idx];
+  return WRITING_ANGLES[hashKeyword(keyword) % WRITING_ANGLES.length];
 }
 
 export async function generateSeoContent({
@@ -106,14 +99,14 @@ export async function generateSeoContent({
   const genAI = new GoogleGenerativeAI(apiKey);
   const region = extractRegionForKeyword(keyword);
   const angle = pickAngle(keyword);
-  const uniqueSeed = `${keyword}-${hashKeyword(keyword)}`;
+  const uniqueSeed = `${keyword}-${hashKeyword(keyword)}-${Date.now() % 997}`;
   const titleStyleHint =
     TITLE_STYLE_HINTS[hashKeyword(keyword + "style") % TITLE_STYLE_HINTS.length];
 
   const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
-      temperature: 1.1,
+      temperature: 1.15,
       topP: 0.95,
       maxOutputTokens: 8192,
     },
@@ -121,44 +114,43 @@ export async function generateSeoContent({
 
   const tenantContextBlock = siteBrief
     ? `
-이 사이트 전용 홈페이지 맥락 (반드시 이 사이트 기준으로 작성, 다른 브랜드·메인 사이트 문구 금지):
-- 사이트 슬로건: ${site.tagline}
-- 사이트 SEO 키워드: ${siteBrief.keywords?.trim() || "(없음)"}
-- 사이트 소개: ${(siteBrief.aboutText || site.description).trim().slice(0, 600)}
-${siteBrief.heroHeadline ? `- 히어로 문구: ${siteBrief.heroHeadline}` : ""}
-- 상호·법인명은 모두 {{brandName}}·{{companyName}} 토큰만 사용 (직접 입력 금지)
+이 사이트 맥락 (다른 브랜드 문구 금지):
+- 슬로건: ${site.tagline}
+- SEO 키워드: ${siteBrief.keywords?.trim() || "(없음)"}
+- 소개: ${(siteBrief.aboutText || site.description).trim().slice(0, 500)}
+${siteBrief.heroHeadline ? `- 히어로: ${siteBrief.heroHeadline}` : ""}
+- 상호는 {{brandName}}·{{companyName}} 토큰만 사용
 `
     : "";
 
-  const prompt = `당신은 강아지·고양이 파양·무료분양 SEO 전문 작가입니다. 네이버 검색 최적화를 고려하여 한국어 HTML 콘텐츠를 작성하세요.
+  const prompt = `당신은 제주·서귀포 부동산 공인중개 SEO 전문 작가입니다. 네이버 검색 최적화를 위한 **키워드 문서형** 한국어 HTML을 작성하세요. 메인 홈페이지 홍보글이 아니라, 검색자가 찾는 정보에 답하는 가이드 문서여야 합니다.
 
-센터 정보 (본문에 아래 토큰을 그대로 사용하세요):
+사무소 정보 (본문에 토큰 그대로 사용):
 - 상호: {{brandName}} ({{companyName}})
 - 대표: {{representative}}
 - 연락처: {{phone}}
-- 입소 비용 안내: {{supportBase}}, {{supportExtra}}, {{supportMax}}
-- 특징: 강아지·고양이 파양 입소, 무료분양·무료입양 매칭, 투명한 입소 비용, 입양 전·후 상담
+- 주소: {{address}}
+- 특징: 공인중개, 투명한 상담, 지역 밀착 중개, 계약 동행
 ${tenantContextBlock}
 키워드: "${corePhrase}"
-(원본 입력: "${keyword}" — 지역명은 한 번만 사용)
-${region ? `지역 맥락: ${region} 지역 파양·무료분양 (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
-제목 작성 스타일: ${titleStyleHint}
+(원본: "${keyword}" — 지역명 중복 금지)
+${region ? `지역 맥락: ${region} (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
+제목 스타일: ${titleStyleHint}
 작성 관점: ${angle}
-고유 시드(다른 글과 중복 금지): ${uniqueSeed}
+고유 시드(중복 금지): ${uniqueSeed}
 
-중요: 이전에 작성한 다른 키워드 페이지와 동일한 문장·구조·사례·제목 패턴을 재사용하지 마세요. 키워드와 지역에 맞는 구체적인 상황을 새로 작성하세요.
+중요: 이전에 쓴 다른 키워드 페이지와 문장·구조·사례·제목 패턴을 재사용하지 마세요. 이번 키워드만의 구체적 내용을 새로 작성하세요.
 ${CONTENT_RULES}
 
-JSON 형식으로만 응답:
+JSON만 응답:
 {
-  "title": "55자 이내 SEO 제목 — 지역 1회, 상호명·| 구분자 없이, 매번 다른 문장 구조",
-  "description": "150자 이내 메타 설명 (토큰 사용 가능)",
+  "title": "55자 이내 SEO 제목 — 지역 1회, 상호·| 없이, 매번 다른 구조",
+  "description": "150자 이내 메타 설명 (토큰 가능)",
   "slug": "영문 소문자 URL slug",
-  "content": "HTML 본문",
+  "content": "HTML 본문 (h2 정확히 4개)",
   "faqs": [
     { "question": "질문1", "answer": "답변1" },
-    { "question": "질문2", "answer": "답변2" },
-    { "question": "질문3", "answer": "답변3" }
+    { "question": "질문2", "answer": "답변2" }
   ]
 }`;
 
@@ -176,7 +168,7 @@ JSON 형식으로만 응답:
       faqs?: SeoFaq[];
     };
 
-    if (!parsed.content || parsed.content.length < 800) {
+    if (!parsed.content || parsed.content.length < 600) {
       throw new Error("Content too short");
     }
 
@@ -198,61 +190,48 @@ function normalizeFaqs(
   site: SiteConfig
 ): SeoFaq[] {
   const valid = (faqs || []).filter((f) => f.question?.trim() && f.answer?.trim());
-  if (valid.length >= 3) return valid.slice(0, 3);
+  if (valid.length >= 2) return valid.slice(0, 2);
   return buildDefaultFaqs(keyword, site);
 }
 
 export function buildDefaultFaqs(keyword: string, site: SiteConfig): SeoFaq[] {
   const region = extractRegionForKeyword(keyword);
-  const regionNote = region ? `${region} 지역 ` : "";
+  const regionNote = region ? `${region} ` : "";
 
   const faqSets: SeoFaq[][] = [
     [
       {
-        question: `${keyword} 파양 입소 절차는 어떻게 되나요?`,
-        answer: `전화·상담 후 센터 방문, 입소 비용 확인, 건강검진과 함께 입소가 진행됩니다. {{brandName}}은 입소 전·후 상담을 지원하며, {{phone}}로 예약할 수 있습니다.`,
+        question: `${keyword} 상담은 어떻게 진행되나요?`,
+        answer: `전화 {{phone}} 또는 방문 상담으로 목적(매매·전세·월세)을 확인한 뒤 일정과 확인 서류를 안내합니다. {{brandName}}에서 ${regionNote}관련 조건을 함께 정리해 드립니다.`,
       },
       {
-        question: `${keyword} 입소 비용은 얼마인가요?`,
-        answer: `모든 사설 보호소에는 관리 비용이 발생합니다. {{brandName}}은 {{supportBase}}, {{supportExtra}}, {{supportMax}} 등 항목별로 투명하게 안내합니다.`,
-      },
-      {
-        question: `${keyword} 상담은 어떻게 하나요?`,
-        answer: `전화 {{phone}} 또는 홈페이지 문의 폼으로 연락주시면 파양·무료분양·입양 상담을 도와드립니다. 센터 방문은 사전 예약제입니다.`,
+        question: `${keyword} 계약 전 꼭 확인할 점은?`,
+        answer: `권리관계·등기·잔금 일정·특약 사항을 미리 점검하는 것이 중요합니다. {{brandName}}은 계약 전 체크리스트를 바탕으로 안내하며, 궁금한 점은 {{phone}}로 문의하세요.`,
       },
     ],
     [
       {
-        question: `${regionNote}${keyword} 무료분양은 어떻게 진행되나요?`,
-        answer: `{{brandName}}은 가정에서 키우던 아이들의 무료분양·무료입양 매칭을 진행합니다. 신원 확인과 심층 상담 후 적합한 가족을 연결합니다.`,
+        question: `${regionNote}${keyword} 중개 수수료는 어떻게 되나요?`,
+        answer: `법정 요율 범위에서 거래 유형·금액에 따라 안내합니다. {{brandName}}은 상담 단계에서 예상 비용을 투명하게 설명합니다.`,
       },
       {
-        question: `이민·이사·군입대로 파양이 필요한데 가능한가요?`,
-        answer: `네, 피치 못한 사정으로 더 이상 함께하기 어려운 경우 파양 입소 상담을 받으실 수 있습니다. {{phone}}로 사유와 아이 정보를 알려주세요.`,
-      },
-      {
-        question: `입소 후 아이 소식을 받을 수 있나요?`,
-        answer: `{{brandName}}은 입소된 아이의 생활 사진과 건강 상태를 정기적으로 공유합니다. 방문 미팅도 환영합니다.`,
+        question: `멀리 살아도 상담·계약이 가능한가요?`,
+        answer: `가능합니다. 서류·일정·현장 확인을 단계별로 공유하며 진행합니다. {{phone}}로 상황을 알려주시면 {{brandName}}이 동선에 맞춰 안내합니다.`,
       },
     ],
     [
       {
-        question: `${keyword} 무료입양 전 준비할 것은?`,
-        answer: `생활 환경, 가족 구성, 반려 경험 등을 상담 시 알려주시면 맞는 아이를 추천해 드립니다. {{brandName}}이 입양 전 체크리스트를 안내합니다.`,
+        question: `${keyword} 관련 매물·조건은 어떻게 좁히나요?`,
+        answer: `예산·입지·생활권·거래 형태를 먼저 정리한 뒤 후보를 비교합니다. {{brandName}} 상담에서 우선순위를 함께 정해 드립니다.`,
       },
       {
-        question: `처음 입양인데 괜찮을까요?`,
-        answer: `{{brandName}}은 입양 초보 가정을 위한 상담과 사후 관리를 제공합니다. 궁금한 점은 {{phone}}로 편하게 문의하세요.`,
-      },
-      {
-        question: `센터 방문은 예약이 필요한가요?`,
-        answer: `네, 아이들의 안정적인 케어를 위해 사전 예약제로 운영합니다. {{phone}}로 방문 일정을 잡아 주세요.`,
+        question: `방문 상담은 예약이 필요한가요?`,
+        answer: `원활한 안내를 위해 사전 연락을 권장합니다. {{address}} 인근이며, {{phone}}로 일정을 잡아 주세요.`,
       },
     ],
   ];
 
-  const idx = hashKeyword(keyword) % faqSets.length;
-  return faqSets[idx];
+  return faqSets[hashKeyword(keyword) % faqSets.length];
 }
 
 type FallbackBuilder = (keyword: string, region: string | null) => string;
@@ -260,42 +239,50 @@ type FallbackBuilder = (keyword: string, region: string | null) => string;
 const FALLBACK_VARIANTS: FallbackBuilder[] = [
   (keyword, region) => {
     const core = buildSeoCorePhrase(keyword);
+    const area = region || "제주";
     return `
-<h2>${core} — {{brandName}} 안내</h2>
-<p>{{companyName}} {{brandName}}은 ${region ? `${region} 및 ` : ""}전국에서 강아지·고양이 파양 입소와 무료분양·무료입양 매칭을 진행합니다. ${core}에 관심 있으신 분들의 문의를 환영합니다.</p>
-<p>대표 {{representative}}와 전문 팀이 파양견·파양묘 입소·케어·분양 매칭·사후 상담까지 함께합니다. {{phone}}로 분양·입양 상담을 예약해 주세요.</p>
+<h2>${core} 기본 이해</h2>
+<p>{{brandName}}은 ${area} 지역에서 ${core} 관련 상담을 진행합니다. 검색 키워드에 맞는 목적(매매·전세·월세)을 먼저 확인한 뒤 필요한 절차를 안내합니다.</p>
+<p>대표 {{representative}}와 함께 권리관계·일정·비용을 투명하게 정리하며, 문의는 {{phone}}로 가능합니다.</p>
 
-<h2>${keyword} 파양·입소 절차</h2>
+<h2>${keyword} 상담 전 준비</h2>
 <ul>
-<li>1단계: 전화·상담 — 파양 사유와 아이 정보 확인</li>
-<li>2단계: 센터 방문 — 입소 비용·일정 안내</li>
-<li>3단계: 건강검진과 함께 입소·케어 시작</li>
-<li>4단계: 무료분양·입양 매칭 및 사후 상담</li>
+<li>거래 목적과 예산 범위</li>
+<li>희망 생활권·교통·편의시설</li>
+<li>잔금·입주 가능 시기</li>
+<li>확인이 필요한 서류·특약</li>
 </ul>
+<p>준비가 정리되면 상담 시간이 짧아지고 선택지가 명확해집니다.</p>
 
-<h2>현실적인 입소 비용 안내</h2>
-<p>모든 사설 보호소에는 관리 비용이 발생합니다. {{brandName}}은 {{supportBase}}, {{supportExtra}}, {{supportMax}} 등 항목별로 투명하게 안내하며, 고객이 납득할 수 있는 현실적인 비용만 받습니다.</p>
+<h2>${area} 생활권과 거래 포인트</h2>
+<p>${area}는 생활권별로 분위기와 수요가 다릅니다. ${keyword}를 고려할 때는 단순 시세뿐 아니라 일상 동선과 관리 여건도 함께 보는 것이 좋습니다.</p>
+<p>{{brandName}}은 현장 감각을 바탕으로 후보를 비교·정리해 드립니다. 위치는 {{address}}입니다.</p>
 
-<h2>${keyword} 상담 문의</h2>
-<p>전화 {{phone}} · {{brandName}}. 센터 방문은 사전 예약제입니다.</p>`.trim();
+<h2>${keyword} 다음 단계</h2>
+<p>관심 조건이 정리되면 전화 {{phone}}로 연락해 주세요. {{companyName}} {{brandName}}이 상담부터 계약 동행까지 도와드립니다.</p>`.trim();
   },
   (keyword, region) => {
-    const area = region || "지역";
+    const area = region || "서귀포";
     return `
-<h2>${area} 강아지·고양이 파양 — {{brandName}}</h2>
-<p>{{brandName}}은 ${keyword} 관련 파양 입소, 무료분양·무료입양 매칭 문의를 받고 있습니다. 이민, 이사, 군입대, 알러지 등 다양한 파양 사유를 이해하고 돕습니다.</p>
-<p>파양을 처음 고민하시는 분도 {{phone}} 상담을 통해 단계별 안내를 받으실 수 있습니다.</p>
+<h2>${keyword} 검색자가 자주 묻는 핵심</h2>
+<p>${keyword}로 찾는 분들은 보통 가격·입지·계약 안정성을 동시에 확인하려 합니다. {{brandName}}은 목적에 맞게 정보를 나누어 설명합니다.</p>
+<p>과장된 확정 표현 없이, 확인 가능한 사실과 절차 중심으로 안내합니다. 문의 {{phone}}.</p>
 
-<h2>센터 특별함</h2>
+<h2>계약 전 체크리스트</h2>
 <ul>
-<li>과밀 수용 없는 쾌적한 환경</li>
-<li>건강검진·케어·생활 사진 정기 공유</li>
-<li>신원 확인·심층 상담 기반 매칭</li>
-<li>입양·분양 후 사후 관리</li>
+<li>등기·권리관계 확인</li>
+<li>중개 수수료·일정 안내</li>
+<li>특약·인도 조건 정리</li>
+<li>잔금 당일 점검 항목</li>
 </ul>
+<p>체크리스트를 기준으로 진행하면 불필요한 재방문을 줄일 수 있습니다.</p>
 
-<h2>${keyword} 자주 묻는 내용</h2>
-<p>입소 비용, 방문 예약, 무료분양 조건 등은 상담 시 자세히 안내해 드립니다. {{companyName}} {{brandName}}에 문의해 주세요.</p>`.trim();
+<h2>${area}에서의 실무 진행</h2>
+<p>${area} 거래는 일정 조율과 현장 확인이 중요합니다. {{brandName}}은 단계별 공유로 원거리 상담도 가능하게 돕습니다.</p>
+<p>사무소 주소는 {{address}}이며, 방문 전 연락을 권장합니다.</p>
+
+<h2>상담 연결</h2>
+<p>${keyword} 관련 궁금한 점이 있으면 {{phone}}로 문의해 주세요. {{brandName}}이 다음 단계를 함께 정리합니다.</p>`.trim();
   },
 ];
 
@@ -310,21 +297,21 @@ function generateFallbackContent(
   const titleVariants = [
     (k: string, r: string | null) => generateVariedSeoTitle(k, r),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 입소 안내`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 중개 안내`),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 무료분양`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} 상담 가이드`),
     (k: string, r: string | null) =>
-      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} — 입소 안내`),
+      generateVariedSeoTitle(k, r, `${extractServicePhrase(k, r)} — 실무 체크`),
   ];
   const descVariants = [
-    (k: string, r: string | null) =>
-      `${buildSeoCorePhrase(k)} 파양·무료분양 상담. {{brandName}}에서 투명한 입소와 책임 매칭을 진행합니다.`,
-    (k: string, r: string | null) =>
-      `${r ? `${r} ` : ""}${extractServicePhrase(k, r)} 전문 안내. {{brandName}} 강아지·고양이 파양·무료입양.`,
     (k: string) =>
-      `{{brandName}} ${buildSeoCorePhrase(k)} — 파양 입소·무료분양. 전화 {{phone}} 상담.`,
+      `${buildSeoCorePhrase(k)} 안내. {{brandName}}에서 투명한 중개 상담을 진행합니다.`,
+    (k: string, r: string | null) =>
+      `${r ? `${r} ` : ""}${extractServicePhrase(k, r)} 실무 가이드. {{brandName}} · {{phone}}.`,
     (k: string) =>
-      `${buildSeoCorePhrase(k)} 입소 비용·분양 안내. {{brandName}} 프리미엄 요양보육 센터.`,
+      `{{brandName}} ${buildSeoCorePhrase(k)} — 계약 전 체크와 상담. 전화 {{phone}}.`,
+    (k: string) =>
+      `${buildSeoCorePhrase(k)} 관련 자주 묻는 내용 정리. {{brandName}} 공인중개 상담.`,
   ];
 
   const tIdx = hashKeyword(keyword + "t") % titleVariants.length;

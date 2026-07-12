@@ -1,8 +1,8 @@
 import type { SiteConfig } from "./site-config-types";
 import { getImageIndexFromSeed, getImageUrl } from "./site-images";
 
-const MIN_IMAGES = 7;
-const MAX_IMAGES = 12;
+const MIN_IMAGES = 5;
+const MAX_IMAGES = 10;
 
 function hashSeed(seed: string): number {
   let hash = 0;
@@ -18,7 +18,7 @@ function nextRand(state: number): { value: number; state: number } {
   return { value: Math.abs(next), state: next };
 }
 
-/** 페이지당 7~12장 (slug 기준 고정) */
+/** 페이지당 5~10장 (slug 기준 고정) */
 export function getSeoImageCount(seed: string): number {
   const { value } = nextRand(hashSeed(`${seed}:count`));
   return MIN_IMAGES + (value % (MAX_IMAGES - MIN_IMAGES + 1));
@@ -83,7 +83,7 @@ function buildGalleryRow(urls: string[], keyword: string, startNum: number): str
   const cols = urls.length;
   const figures = urls
     .map((url, i) =>
-      buildSeoImageFigure(url, `${keyword} 파양·분양 사례 ${startNum + i}`)
+      buildSeoImageFigure(url, `${keyword} 관련 안내 이미지 ${startNum + i}`)
     )
     .join("");
   return `<div class="seo-image-row seo-image-row--${cols}">${figures}</div>`;
@@ -170,7 +170,7 @@ function injectRowsAfterHeadings(content: string, rows: string[]): string {
   return output;
 }
 
-/** 본문에 7~12장 이미지를 1·2·3열 랜덤 배치로 삽입 */
+/** 본문에 5~10장 이미지를 1·2·3열 랜덤 배치로 삽입 */
 export function enrichSeoContentWithImages(
   content: string,
   keyword: string,
@@ -190,4 +190,14 @@ export function enrichSeoContentWithImages(
   }
 
   return injectRowsAfterHeadings(marked, rows);
+}
+
+/** OG용 — 본문에 들어가는 이미지 URL 목록 */
+export function getSeoContentImageUrls(
+  seed: string,
+  config: SiteConfig
+): string[] {
+  const count = getSeoImageCount(seed);
+  const indices = getSeoImageIndices(seed, config, count);
+  return indices.map((idx) => getImageUrl(idx, config));
 }

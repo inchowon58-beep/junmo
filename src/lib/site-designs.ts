@@ -20,11 +20,16 @@ export const SITE_DESIGN_OPTIONS = [
     label: "D 디자인",
     description: "mainecoon 스타일 · 프리미엄 히어로 · 서비스·가이드·갤러리·FAQ",
   },
+  {
+    id: "e",
+    label: "E 디자인",
+    description: "부동산 전용 · 신뢰형 소개 · 수상·대표소개·후기 · 전화·플레이스 바",
+  },
 ] as const;
 
 export type SiteDesignId = (typeof SITE_DESIGN_OPTIONS)[number]["id"];
 
-export const DEFAULT_SITE_DESIGN: SiteDesignId = "c";
+export const DEFAULT_SITE_DESIGN: SiteDesignId = "e";
 
 const DESIGN_IDS = new Set<string>(SITE_DESIGN_OPTIONS.map((o) => o.id));
 
@@ -35,5 +40,5 @@ export function parseSiteDesignId(value: unknown): SiteDesignId {
 
 export function siteDesignLabel(id: SiteDesignId | string | null | undefined): string {
   const found = SITE_DESIGN_OPTIONS.find((o) => o.id === id);
-  return found?.label ?? "A 디자인";
+  return found?.label ?? "E 디자인";
 }

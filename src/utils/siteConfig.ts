@@ -99,10 +99,10 @@ export async function getResolvedSiteConfig(
 
   if (!isSupabaseConfigured() || !hostname) {
     const legacyUi = resolveTenantContentData(
-      { siteDesign: "c" },
-      "agapet-shelter",
+      { siteDesign: "e" },
+      "taesol-junmo",
       baseConfig.brandName,
-      "아가펫보호소,강아지파양,고양이파양,강아지무료분양,고양이무료분양",
+      "제주공인중개사,서귀포공인중개사,양준모공인중개사,태솔부동산",
       baseConfig.description,
       baseConfig.imageCount
     );
@@ -123,10 +123,10 @@ export async function getResolvedSiteConfig(
     const tenant = await fetchTenantByHostname(hostname);
     if (!tenant) {
       const legacyUi = resolveTenantContentData(
-        { siteDesign: "c" },
-        hostname || "agapet-shelter",
+        { siteDesign: "e" },
+        hostname || "taesol-junmo",
         baseConfig.brandName,
-        "아가펫보호소,강아지파양,고양이파양,강아지무료분양,고양이무료분양",
+        "제주공인중개사,서귀포공인중개사,양준모공인중개사,태솔부동산",
         baseConfig.description,
         baseConfig.imageCount
       );

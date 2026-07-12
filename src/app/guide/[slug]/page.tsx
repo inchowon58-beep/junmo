@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { resolvePageByKey } from "@/lib/pages-resolver";
 import { guidePageUrl } from "@/lib/constants";
 import { buildPageMetadata, getOgImageAbsoluteUrl } from "@/lib/metadata";
 import { buildDefaultFaqs } from "@/lib/gemini";
-import {
-  resolveSeoPage,
-  phoneToTel,
-} from "@/lib/site-config";
+import { resolveSeoPage, phoneToTel, getPageImageUrl } from "@/lib/site-config";
+import { getSeoContentImageUrls } from "@/lib/seo-content-images";
 import { getResolvedSiteConfig } from "@/utils/siteConfig";
 import { extractRegionFromKeyword } from "@/lib/region-parse";
 import { getNearbySubRegionLinks } from "@/lib/nearby-regions";
@@ -16,17 +13,19 @@ import { getRelatedKeywordPageLinks } from "@/lib/related-keyword-pages";
 import NearbyRegionsSection from "@/components/NearbyRegionsSection";
 import RelatedKeywordPagesSection from "@/components/RelatedKeywordPagesSection";
 import LocalPartnersSection from "@/components/LocalPartnersSection";
-import QuickInquiryForm from "@/components/QuickInquiryForm";
+import { showCompanyContact } from "@/lib/exposure-mode";
+import Link from "next/link";
 import { buildSeoBrowserTitle } from "@/lib/seo-keyword";
 import { ensureLocalPartners } from "@/lib/seo-local-partners";
-import { INQUIRY_SECTION_ID, inquiryOnDarkBgClass, showCompanyContact } from "@/lib/exposure-mode";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
+
+/** 서귀포 기본 좌표 — 키워드 지역 없을 때 */
+const DEFAULT_GEO = { lat: 33.2559783, lng: 126.5721595 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -37,7 +36,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "페이지를 찾을 수 없습니다" };
 
   const resolved = resolveSeoPage(page, config);
-  const browserTitle = buildSeoBrowserTitle(resolved.title, config.brandName, page.keyword || page.slug);
+  const browserTitle = buildSeoBrowserTitle(
+    resolved.title,
+    config.brandName,
+    page.keyword || page.slug
+  );
+  const region = extractRegionFromKeyword(page.keyword) || "서귀포시";
+  const seed = page.slug || page.keyword;
+  const contentImages = getSeoContentImageUrls(seed, config);
+  const heroImage = getPageImageUrl(page, config);
+
   return {
     ...buildPageMetadata(config, {
       title: resolved.title,
@@ -45,7 +53,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       path: guidePageUrl(page.slug),
       ogPath: `/guide/${page.slug}/opengraph-image`,
       type: "article",
-      keywords: [page.keyword, "강아지파양", "고양이파양", config.brandName],
+      keywords: [
+        page.keyword,
+        "제주공인중개사",
+        "서귀포공인중개사",
+        "제주부동산",
+        config.brandName,
+      ],
+      extraOgImages: [heroImage, ...contentImages],
+      geo: {
+        region: "KR-49",
+        placename: region,
+        position: `${DEFAULT_GEO.lat};${DEFAULT_GEO.lng}`,
+      },
     }),
     title: { absolute: browserTitle },
   };
@@ -53,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuidePage({ params }: Props) {
   const { slug } = await params;
-  const [{ page }, { config, isTenant }] = await Promise.all([
+  const [{ page }, { config }] = await Promise.all([
     resolvePageByKey(slug),
     getResolvedSiteConfig(),
   ]);
@@ -70,94 +90,75 @@ export default async function GuidePage({ params }: Props) {
     getNearbySubRegionLinks(currentRegion, page.slug, page.keyword),
   ]);
   const faqs =
-    resolved.faqs?.length >= 3
-      ? resolved.faqs.slice(0, 3)
+    resolved.faqs?.length >= 2
+      ? resolved.faqs.slice(0, 2)
       : buildDefaultFaqs(page.keyword, config).map((f) => ({
           question: f.question,
           answer: f.answer
             .replace(/\{\{brandName\}\}/g, config.brandName)
             .replace(/\{\{phone\}\}/g, config.phone)
+            .replace(/\{\{address\}\}/g, config.address)
             .replace(/\{\{supportMax\}\}/g, config.supportMax),
         }));
 
-  const brandShort = config.brandName.slice(0, 2) || "아가";
   const showCompany = showCompanyContact(config.exposureMode);
-  const showCompanyLine =
-    showCompany &&
-    config.companyName.trim() &&
-    config.companyName.trim() !== config.brandName.trim();
-  const tagline =
-    config.tagline?.trim() || "강아지·고양이 파양 · 무료분양 전문";
+  const regionLabel = currentRegion || "제주";
 
   return (
-    <article className={`bg-cream min-h-screen${isTenant ? " tenant-guide-page" : ""}`}>
-      <div className="bg-dark text-white py-8">
-        <div className="max-w-4xl mx-auto px-4 flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-orange flex-shrink-0 bg-orange flex items-center justify-center">
-            <span className="text-xl font-black">{brandShort}</span>
-          </div>
-          <div>
-            <p className="font-bold">{config.brandName}</p>
-            {showCompanyLine && (
-              <p className="text-sm text-gray-300">{config.companyName}</p>
-            )}
-            <p className="text-sm text-orange">{tagline}</p>
-          </div>
+    <article className="guide-doc min-h-screen">
+      <header className="guide-doc-header border-b border-black/8 bg-white">
+        <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between gap-4">
+          <Link href="/" className="text-sm font-semibold text-[#0b1c33] hover:underline">
+            {config.brandName}
+          </Link>
+          {showCompany && (
+            <a
+              href={`tel:${phoneToTel(config.phone)}`}
+              className="text-sm font-medium text-[#c9a227] hover:underline"
+            >
+              {config.phone}
+            </a>
+          )}
         </div>
-      </div>
+      </header>
 
-      <div className="relative h-64 lg:h-80">
-        <Image
-          src={resolved.imageUrl}
-          alt={page.keyword}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10">
-          <div className="max-w-4xl mx-auto">
-            <span className="inline-block bg-orange text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
-              {page.keyword}
-            </span>
-            <h1 className="text-2xl lg:text-4xl font-bold text-white">
-              {resolved.title}
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-10 lg:py-16">
-        <QuickInquiryForm
-          keyword={page.keyword}
-          pageSlug={page.slug}
-          pageTitle={resolved.title}
-          brandName={config.brandName}
-          exposureMode={config.exposureMode}
-        />
+      <div className="max-w-3xl mx-auto px-4 py-10 lg:py-14">
+        <p className="text-xs font-semibold tracking-wide text-[#c9a227] uppercase mb-3">
+          {page.keyword}
+        </p>
+        <h1 className="text-[clamp(1.5rem,4vw,2.15rem)] font-bold text-[#0b1c33] leading-snug mb-4">
+          {resolved.title}
+        </h1>
+        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+          {resolved.description}
+        </p>
 
         <div
-          className="prose-seo bg-white rounded-2xl p-6 lg:p-10 shadow-sm"
+          className="prose-seo guide-doc-body"
           dangerouslySetInnerHTML={{ __html: resolved.content }}
         />
 
-        <div className="mt-10 bg-white rounded-2xl p-6 lg:p-8 shadow-sm">
-          <h2 className="text-xl font-bold text-dark mb-6">자주 묻는 질문</h2>
-          <div className="space-y-4">
+        <section className="mt-12 pt-8 border-t border-black/8">
+          <h2 className="text-lg font-bold text-[#0b1c33] mb-4">자주 묻는 질문</h2>
+          <div className="space-y-3">
             {faqs.map((faq) => (
               <details
                 key={faq.question}
-                className="group rounded-xl border border-gray-100 bg-gray-bg/50 open:bg-white open:shadow-sm transition"
+                className="group rounded-lg border border-gray-200 bg-white open:shadow-sm transition"
               >
-                <summary className="cursor-pointer list-none px-5 py-4 font-semibold text-dark flex items-center justify-between gap-4">
+                <summary className="cursor-pointer list-none px-4 py-3.5 font-semibold text-[#0b1c33] flex items-center justify-between gap-3 text-sm sm:text-base">
                   <span>{faq.question}</span>
-                  <span className="text-orange text-lg group-open:rotate-45 transition-transform">+</span>
+                  <span className="text-[#c9a227] text-lg group-open:rotate-45 transition-transform">
+                    +
+                  </span>
                 </summary>
-                <p className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">{faq.answer}</p>
+                <p className="px-4 pb-4 text-sm text-gray-600 leading-relaxed">
+                  {faq.answer}
+                </p>
               </details>
             ))}
           </div>
-        </div>
+        </section>
 
         <RelatedKeywordPagesSection links={relatedKeywordLinks} />
 
@@ -174,27 +175,17 @@ export default async function GuidePage({ params }: Props) {
           />
         )}
 
-        <div className="mt-10 text-center bg-dark rounded-2xl p-8 text-white">
-          <h2 className="text-xl font-bold mb-3">{page.keyword} 상담</h2>
-          <p className="text-gray-300 mb-6 text-sm">
-            {config.brandName} · 파양·무료분양 상담 · 입소비 {config.supportBase}부터
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {showCompany && (
-              <a
-                href={`tel:${phoneToTel(config.phone)}`}
-                className="inline-flex items-center gap-2 bg-orange text-white font-bold px-6 py-3 rounded-full hover:bg-orange-light transition"
-              >
-                무료 상담 신청 {config.phone}
-              </a>
-            )}
-            <Link
-              href={`#${INQUIRY_SECTION_ID}`}
-              className={`inline-flex items-center gap-2 font-bold px-6 py-3 rounded-full transition ${inquiryOnDarkBgClass(config.exposureMode)}`}
+        <div className="mt-10 text-center border border-[#0b1c33]/10 bg-white rounded-xl p-6">
+          <p className="text-sm text-gray-500 mb-1">{regionLabel} · {page.keyword}</p>
+          <p className="font-bold text-[#0b1c33] mb-4">{config.brandName}</p>
+          {showCompany && (
+            <a
+              href={`tel:${phoneToTel(config.phone)}`}
+              className="inline-flex items-center justify-center bg-[#c9a227] text-[#0b1c33] font-bold px-6 py-3 rounded-lg hover:bg-[#e0bc4a] transition"
             >
-              {showCompany ? "빠른 문의" : "빠른 문의 신청하기"}
-            </Link>
-          </div>
+              전화 상담 {config.phone}
+            </a>
+          )}
         </div>
       </div>
 
@@ -206,40 +197,34 @@ export default async function GuidePage({ params }: Props) {
             "@type": "Article",
             headline: resolved.title,
             description: resolved.description,
-            image: getOgImageAbsoluteUrl(config, `/guide/${page.slug}/opengraph-image`),
+            keywords: page.keyword,
+            image: [
+              getOgImageAbsoluteUrl(config, `/guide/${page.slug}/opengraph-image`),
+              getPageImageUrl(page, config),
+              ...getSeoContentImageUrls(page.slug || page.keyword, config),
+            ],
             author: {
-              "@type": "Organization",
-              name: showCompany ? config.companyName : config.brandName,
+              "@type": "RealEstateAgent",
+              name: config.brandName,
+              telephone: config.phone,
+              address: config.address,
             },
             publisher: {
               "@type": "Organization",
               name: config.brandName,
             },
+            contentLocation: {
+              "@type": "Place",
+              name: regionLabel,
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: DEFAULT_GEO.lat,
+                longitude: DEFAULT_GEO.lng,
+              },
+            },
           }),
         }}
       />
-      {localPartners.length > 0 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ItemList",
-              name: `${localRegion || page.keyword} 반려동물 관련 업체`,
-              itemListElement: localPartners.map((partner, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                item: {
-                  "@type": "LocalBusiness",
-                  name: partner.name,
-                  address: partner.address,
-                  url: partner.placeUrl,
-                },
-              })),
-            }),
-          }}
-        />
-      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

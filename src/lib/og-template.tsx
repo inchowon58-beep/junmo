@@ -3,9 +3,9 @@ import type { CSSProperties, ReactNode } from "react";
 export const OG_SIZE = { width: 1200, height: 630 };
 
 export const OG_COLORS = {
-  dark: "#1a1a1a",
-  orange: "#e85d04",
-  orangeLight: "#f48c06",
+  dark: "#0b1c33",
+  orange: "#c9a227",
+  orangeLight: "#e0bc4a",
   white: "#ffffff",
   gray: "#9ca3af",
 };
@@ -51,13 +51,15 @@ export function OgBrandedLayout({
             fontWeight: 900,
           }}
         >
-          아가
+          태솔
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div style={{ color: OG_COLORS.white, fontSize: 36, fontWeight: 800 }}>
             {brandName}
           </div>
-          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>강아지·고양이 파양 · 무료분양</div>
+          <div style={{ color: OG_COLORS.gray, fontSize: 22 }}>
+            제주 · 서귀포 공인중개
+          </div>
         </div>
       </div>
 

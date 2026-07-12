@@ -42,6 +42,13 @@ interface PageMetadataOptions {
   type?: "website" | "article";
   keywords?: string[];
   noIndex?: boolean;
+  /** 본문 이미지 등 추가 OG 이미지 URL */
+  extraOgImages?: string[];
+  geo?: {
+    region?: string;
+    placename?: string;
+    position?: string;
+  };
 }
 
 export function buildPageMetadata(
@@ -56,12 +63,25 @@ export function buildPageMetadata(
     type = "website",
     keywords,
     noIndex = false,
+    extraOgImages = [],
+    geo,
   } = options;
 
   const url = path.startsWith("http") ? path : `${getSiteUrl(config)}${path}`;
-  const images = ogPath
+  const primaryImages = ogPath
     ? buildOgImageMeta(config, ogPath, title)
     : buildOgImageMeta(config, "/opengraph-image", title);
+
+  const contentImages = extraOgImages.filter(Boolean).map((imgUrl) => ({
+    url: imgUrl,
+    secureUrl: imgUrl,
+    width: 800,
+    height: 500,
+    alt: title,
+    type: "image/webp" as const,
+  }));
+
+  const images = [...primaryImages, ...contentImages];
 
   return {
     title,
@@ -87,6 +107,9 @@ export function buildPageMetadata(
     other: {
       "og:image:width": String(OG_IMAGE_WIDTH),
       "og:image:height": String(OG_IMAGE_HEIGHT),
+      ...(geo?.region ? { "geo.region": geo.region } : {}),
+      ...(geo?.placename ? { "geo.placename": geo.placename } : {}),
+      ...(geo?.position ? { "geo.position": geo.position, ICBM: geo.position } : {}),
     },
   };
 }
