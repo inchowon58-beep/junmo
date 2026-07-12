@@ -89,9 +89,13 @@ export async function createSeoPageFromKeyword(
 
   let generated;
   try {
+    const apiKey =
+      process.env.GEMINI_API_KEY?.trim() ||
+      site.geminiApiKey?.trim() ||
+      "";
     generated = await generateSeoContent({
       keyword: trimmedKeyword,
-      apiKey: site.geminiApiKey || process.env.GEMINI_API_KEY || "",
+      apiKey,
       site,
       siteBrief:
         isTenant && tenantUi
@@ -105,7 +109,11 @@ export async function createSeoPageFromKeyword(
     });
   } catch (error) {
     if (error instanceof DataStorageError) throw error;
-    throw new SeoCreateError("AI 콘텐츠 생성에 실패했습니다.", "GENERATE");
+    const detail =
+      error instanceof Error && error.message
+        ? error.message
+        : "AI 콘텐츠 생성에 실패했습니다.";
+    throw new SeoCreateError(detail, "GENERATE");
   }
 
   const now = new Date().toISOString();
