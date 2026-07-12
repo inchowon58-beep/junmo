@@ -1,6 +1,10 @@
-import type { SeoReview } from "@/lib/seo-reviews";
+export interface SeoReview {
+  name: string;
+  area: string;
+  text: string;
+}
 
-const REVIEWS: SeoReview[] = [
+const REVIEW_POOL: SeoReview[] = [
   {
     name: "김○○",
     area: "서귀포시 동홍동",
@@ -48,30 +52,51 @@ const REVIEWS: SeoReview[] = [
   },
 ];
 
-export default function ReviewsRe() {
-  return (
-    <section id="reviews" className="re-section re-section-mist scroll-mt-20">
-      <div className="re-container">
-        <p className="re-eyebrow re-eyebrow-dark text-center">고객 후기</p>
-        <h2 className="re-heading text-center">함께한 분들의 이야기</h2>
-        <p className="re-lead text-center max-w-lg mx-auto mt-4">
-          실제 상담·거래 과정에서 남겨 주신 소중한 말씀입니다.
-        </p>
-        <div className="re-reviews mt-12">
-          {REVIEWS.map((r) => (
-            <article key={`${r.name}-${r.area}`} className="re-review">
-              <div className="re-review-stars" aria-hidden>
-                ★★★★★
-              </div>
-              <p className="re-review-text">{r.text}</p>
-              <footer className="re-review-meta">
-                <span className="re-review-name">{r.name}</span>
-                <span className="re-review-area">{r.area}</span>
-              </footer>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+function hashSeed(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) || 1;
+}
+
+/** 키워드마다 다른 리뷰 3개 — 본문 글자수(1500~2000) 보완용 */
+export function getSeoReviewsForKeyword(keyword: string, count = 3): SeoReview[] {
+  const seed = hashSeed(keyword.trim() || "review");
+  const pool = [...REVIEW_POOL];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = (seed + i * 17) % (i + 1);
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  return pool.slice(0, count).map((r, idx) => ({
+    ...r,
+    text:
+      idx === 0
+        ? `${keyword} 상담을 받으며 ${r.text}`
+        : idx === 1
+          ? `${r.text} ${keyword} 관련으로도 다시 문의하고 싶습니다.`
+          : r.text,
+  }));
+}
+
+export function stripHtmlToText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** 본문+FAQ+리뷰 순수 글자수 */
+export function estimateSeoPageCharCount(
+  contentHtml: string,
+  faqs: { question: string; answer: string }[],
+  reviews: SeoReview[]
+): number {
+  const body = stripHtmlToText(contentHtml);
+  const faqText = faqs.map((f) => `${f.question}${f.answer}`).join("");
+  const reviewText = reviews.map((r) => `${r.name}${r.area}${r.text}`).join("");
+  return body.length + faqText.length + reviewText.length;
 }

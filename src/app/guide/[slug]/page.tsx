@@ -25,6 +25,8 @@ import {
   normalizeSeoKeyword,
 } from "@/lib/seo-keyword";
 import { ensureLocalPartners } from "@/lib/seo-local-partners";
+import GuideReviewsSection from "@/components/GuideReviewsSection";
+import { getSeoReviewsForKeyword } from "@/lib/seo-reviews";
 import { jejuImageUrl, pickJejuImageIndexes } from "@/lib/jeju-images";
 
 /**
@@ -142,6 +144,7 @@ export default async function GuidePage({ params }: Props) {
 
   const showCompany = showCompanyContact(config.exposureMode);
   const regionLabel = currentRegion || "제주";
+  const reviews = getSeoReviewsForKeyword(exactKeyword, 3);
   const bannerImg =
     resolved.imageUrl ||
     jejuImageUrl(pickJejuImageIndexes(1, `guide-banner-${page.slug}`)[0]);
@@ -222,6 +225,8 @@ export default async function GuidePage({ params }: Props) {
               ))}
             </div>
           </section>
+
+          <GuideReviewsSection keyword={exactKeyword} reviews={reviews} />
 
           <RelatedKeywordPagesSection links={relatedKeywordLinks} />
 
