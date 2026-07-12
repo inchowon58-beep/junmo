@@ -119,11 +119,11 @@ export function resolveSeoPage(page: SeoPage, config: SiteConfig): ResolvedSeoPa
     ...page,
     keyword,
     title: buildSeoPageTitle(applySiteTokens(page.title, config), keyword, config.brandName),
-    description: polishSeoText(applySiteTokens(page.description, config), region),
+    description: polishSeoText(applySiteTokens(page.description, config), region, keyword),
     content: enrichSeoContentWithImages(polishedContent, keyword, config, seed),
     faqs: (page.faqs || []).map((f) => ({
-      question: polishSeoText(applySiteTokens(f.question, config), region),
-      answer: polishSeoText(applySiteTokens(f.answer, config), region),
+      question: polishSeoText(applySiteTokens(f.question, config), region, keyword),
+      answer: polishSeoText(applySiteTokens(f.answer, config), region, keyword),
     })),
     imageUrl: getPageImageUrl(page, config),
   };

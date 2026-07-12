@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { resolvePageByKey } from "@/lib/pages-resolver";
 import { guidePageUrl } from "@/lib/constants";
 import { buildPageMetadata, getOgImageAbsoluteUrl } from "@/lib/metadata";
@@ -15,8 +16,13 @@ import RelatedKeywordPagesSection from "@/components/RelatedKeywordPagesSection"
 import LocalPartnersSection from "@/components/LocalPartnersSection";
 import { showCompanyContact } from "@/lib/exposure-mode";
 import Link from "next/link";
-import { buildSeoBrowserTitle } from "@/lib/seo-keyword";
+import {
+  buildSeoBrowserTitle,
+  enforceExactKeyword,
+  normalizeSeoKeyword,
+} from "@/lib/seo-keyword";
 import { ensureLocalPartners } from "@/lib/seo-local-partners";
+import { jejuImageUrl, pickJejuImageIndexes } from "@/lib/jeju-images";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +30,6 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/** 서귀포 기본 좌표 — 키워드 지역 없을 때 */
 const DEFAULT_GEO = { lat: 33.2559783, lng: 126.5721595 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -36,25 +41,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!page) return { title: "페이지를 찾을 수 없습니다" };
 
   const resolved = resolveSeoPage(page, config);
+  const exactKeyword = normalizeSeoKeyword(page.keyword);
   const browserTitle = buildSeoBrowserTitle(
-    resolved.title,
+    enforceExactKeyword(resolved.title, exactKeyword),
     config.brandName,
-    page.keyword || page.slug
+    exactKeyword || page.slug
   );
-  const region = extractRegionFromKeyword(page.keyword) || "서귀포시";
-  const seed = page.slug || page.keyword;
+  const region = extractRegionFromKeyword(exactKeyword) || "서귀포시";
+  const seed = page.slug || exactKeyword;
   const contentImages = getSeoContentImageUrls(seed, config);
   const heroImage = getPageImageUrl(page, config);
 
   return {
     ...buildPageMetadata(config, {
-      title: resolved.title,
-      description: resolved.description,
+      title: enforceExactKeyword(resolved.title, exactKeyword),
+      description: enforceExactKeyword(resolved.description, exactKeyword),
       path: guidePageUrl(page.slug),
       ogPath: `/guide/${page.slug}/opengraph-image`,
       type: "article",
       keywords: [
-        page.keyword,
+        exactKeyword,
         "제주공인중개사",
         "서귀포공인중개사",
         "제주부동산",
@@ -79,113 +85,154 @@ export default async function GuidePage({ params }: Props) {
   ]);
   if (!page) notFound();
 
+  const exactKeyword = normalizeSeoKeyword(page.keyword);
   const resolved = resolveSeoPage(page, config);
+  const title = enforceExactKeyword(resolved.title, exactKeyword);
+  const description = enforceExactKeyword(resolved.description, exactKeyword);
+  const contentHtml = enforceExactKeyword(resolved.content, exactKeyword);
+
   const { region: localRegion, partners: localPartners } = await ensureLocalPartners(
     page,
     config
   );
-  const currentRegion = extractRegionFromKeyword(page.keyword) || localRegion;
+  const currentRegion = extractRegionFromKeyword(exactKeyword) || localRegion;
   const [relatedKeywordLinks, nearbySubRegions] = await Promise.all([
-    getRelatedKeywordPageLinks(page.slug, page.keyword, 30),
-    getNearbySubRegionLinks(currentRegion, page.slug, page.keyword),
+    getRelatedKeywordPageLinks(page.slug, exactKeyword, 30),
+    getNearbySubRegionLinks(currentRegion, page.slug, exactKeyword),
   ]);
-  const faqs =
+  const faqs = (
     resolved.faqs?.length >= 2
       ? resolved.faqs.slice(0, 2)
-      : buildDefaultFaqs(page.keyword, config).map((f) => ({
-          question: f.question,
-          answer: f.answer
-            .replace(/\{\{brandName\}\}/g, config.brandName)
-            .replace(/\{\{phone\}\}/g, config.phone)
-            .replace(/\{\{address\}\}/g, config.address)
-            .replace(/\{\{supportMax\}\}/g, config.supportMax),
-        }));
+      : buildDefaultFaqs(exactKeyword, config)
+  ).map((f) => ({
+    question: enforceExactKeyword(
+      f.question
+        .replace(/\{\{brandName\}\}/g, config.brandName)
+        .replace(/\{\{phone\}\}/g, config.phone),
+      exactKeyword
+    ),
+    answer: enforceExactKeyword(
+      f.answer
+        .replace(/\{\{brandName\}\}/g, config.brandName)
+        .replace(/\{\{phone\}\}/g, config.phone)
+        .replace(/\{\{address\}\}/g, config.address)
+        .replace(/\{\{supportMax\}\}/g, config.supportMax),
+      exactKeyword
+    ),
+  }));
 
   const showCompany = showCompanyContact(config.exposureMode);
   const regionLabel = currentRegion || "제주";
+  const bannerImg =
+    resolved.imageUrl ||
+    jejuImageUrl(pickJejuImageIndexes(1, `guide-banner-${page.slug}`)[0]);
 
   return (
-    <article className="guide-doc min-h-screen">
-      <header className="guide-doc-header border-b border-black/8 bg-white">
-        <div className="max-w-3xl mx-auto px-4 py-5 flex items-center justify-between gap-4">
-          <Link href="/" className="text-sm font-semibold text-[#0b1c33] hover:underline">
+    <article className="guide-landing">
+      {/* 메인과 같은 풀블리드 배너 */}
+      <section className="re-hero relative min-h-[52svh] sm:min-h-[58svh] flex flex-col justify-end overflow-hidden">
+        <Image
+          src={bannerImg}
+          alt={exactKeyword}
+          fill
+          priority
+          className="object-cover object-center re-hero-img"
+          sizes="100vw"
+        />
+        <div className="re-hero-veil absolute inset-0" aria-hidden />
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pb-16 pt-28 sm:pb-20">
+          <p className="re-brand text-white/90 text-sm sm:text-base font-medium mb-3">
             {config.brandName}
-          </Link>
-          {showCompany && (
-            <a
-              href={`tel:${phoneToTel(config.phone)}`}
-              className="text-sm font-medium text-[#c9a227] hover:underline"
-            >
-              {config.phone}
+          </p>
+          <p className="text-[var(--re-gold)] text-xs sm:text-sm font-semibold tracking-wide mb-3">
+            {exactKeyword}
+          </p>
+          <h1 className="text-[clamp(1.35rem,3.8vw,2.35rem)] font-semibold text-white leading-snug max-w-3xl mb-4">
+            {title}
+          </h1>
+          <p className="text-white/80 text-sm sm:text-base max-w-2xl leading-relaxed mb-6">
+            {description}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {showCompany && (
+              <a href={`tel:${phoneToTel(config.phone)}`} className="re-btn re-btn-gold">
+                전화 상담
+              </a>
+            )}
+            <a href="#guide-body" className="re-btn re-btn-ghost">
+              내용 보기
             </a>
-          )}
-        </div>
-      </header>
-
-      <div className="max-w-3xl mx-auto px-4 py-10 lg:py-14">
-        <p className="text-xs font-semibold tracking-wide text-[#c9a227] uppercase mb-3">
-          {page.keyword}
-        </p>
-        <h1 className="text-[clamp(1.5rem,4vw,2.15rem)] font-bold text-[#0b1c33] leading-snug mb-4">
-          {resolved.title}
-        </h1>
-        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-          {resolved.description}
-        </p>
-
-        <div
-          className="prose-seo guide-doc-body"
-          dangerouslySetInnerHTML={{ __html: resolved.content }}
-        />
-
-        <section className="mt-12 pt-8 border-t border-black/8">
-          <h2 className="text-lg font-bold text-[#0b1c33] mb-4">자주 묻는 질문</h2>
-          <div className="space-y-3">
-            {faqs.map((faq) => (
-              <details
-                key={faq.question}
-                className="group rounded-lg border border-gray-200 bg-white open:shadow-sm transition"
-              >
-                <summary className="cursor-pointer list-none px-4 py-3.5 font-semibold text-[#0b1c33] flex items-center justify-between gap-3 text-sm sm:text-base">
-                  <span>{faq.question}</span>
-                  <span className="text-[#c9a227] text-lg group-open:rotate-45 transition-transform">
-                    +
-                  </span>
-                </summary>
-                <p className="px-4 pb-4 text-sm text-gray-600 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <RelatedKeywordPagesSection links={relatedKeywordLinks} />
+      {/* 서브 콘텐츠 */}
+      <div id="guide-body" className="re-section re-section-paper scroll-mt-24">
+        <div className="re-container max-w-3xl">
+          <nav className="text-sm text-[var(--re-muted)] mb-8 flex flex-wrap gap-2 items-center">
+            <Link href="/" className="hover:text-[var(--re-gold)] transition">
+              홈
+            </Link>
+            <span aria-hidden>/</span>
+            <span className="text-[var(--re-ink)] font-medium">{exactKeyword}</span>
+          </nav>
 
-        <NearbyRegionsSection
-          cityLabel={nearbySubRegions.cityLabel}
-          regions={nearbySubRegions.regions}
-        />
-
-        {localRegion && (
-          <LocalPartnersSection
-            region={localRegion}
-            partners={localPartners}
-            brandName={config.brandName}
+          <div
+            className="prose-seo guide-doc-body"
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
-        )}
 
-        <div className="mt-10 text-center border border-[#0b1c33]/10 bg-white rounded-xl p-6">
-          <p className="text-sm text-gray-500 mb-1">{regionLabel} · {page.keyword}</p>
-          <p className="font-bold text-[#0b1c33] mb-4">{config.brandName}</p>
-          {showCompany && (
-            <a
-              href={`tel:${phoneToTel(config.phone)}`}
-              className="inline-flex items-center justify-center bg-[#c9a227] text-[#0b1c33] font-bold px-6 py-3 rounded-lg hover:bg-[#e0bc4a] transition"
-            >
-              전화 상담 {config.phone}
-            </a>
+          <section className="mt-12 pt-8 border-t border-black/8">
+            <h2 className="re-heading text-xl mb-4">자주 묻는 질문</h2>
+            <div className="space-y-3">
+              {faqs.map((faq) => (
+                <details
+                  key={faq.question}
+                  className="group rounded-lg border border-gray-200 bg-white open:shadow-sm transition"
+                >
+                  <summary className="cursor-pointer list-none px-4 py-3.5 font-semibold text-[var(--re-ink)] flex items-center justify-between gap-3 text-sm sm:text-base">
+                    <span>{faq.question}</span>
+                    <span className="text-[var(--re-gold)] text-lg group-open:rotate-45 transition-transform">
+                      +
+                    </span>
+                  </summary>
+                  <p className="px-4 pb-4 text-sm text-[var(--re-muted)] leading-relaxed">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <RelatedKeywordPagesSection links={relatedKeywordLinks} />
+
+          <NearbyRegionsSection
+            cityLabel={nearbySubRegions.cityLabel}
+            regions={nearbySubRegions.regions}
+          />
+
+          {localRegion && (
+            <LocalPartnersSection
+              region={localRegion}
+              partners={localPartners}
+              brandName={config.brandName}
+            />
           )}
+
+          <div className="mt-10 text-center border border-[var(--re-navy)]/10 bg-white rounded-xl p-6">
+            <p className="text-sm text-[var(--re-muted)] mb-1">
+              {regionLabel} · {exactKeyword}
+            </p>
+            <p className="font-bold text-[var(--re-ink)] mb-4">{config.brandName}</p>
+            {showCompany && (
+              <a
+                href={`tel:${phoneToTel(config.phone)}`}
+                className="re-btn re-btn-gold inline-flex"
+              >
+                전화 상담 {config.phone}
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -195,13 +242,13 @@ export default async function GuidePage({ params }: Props) {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
-            headline: resolved.title,
-            description: resolved.description,
-            keywords: page.keyword,
+            headline: title,
+            description,
+            keywords: exactKeyword,
             image: [
               getOgImageAbsoluteUrl(config, `/guide/${page.slug}/opengraph-image`),
               getPageImageUrl(page, config),
-              ...getSeoContentImageUrls(page.slug || page.keyword, config),
+              ...getSeoContentImageUrls(page.slug || exactKeyword, config),
             ],
             author: {
               "@type": "RealEstateAgent",

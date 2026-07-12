@@ -23,7 +23,6 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   const pathname = usePathname() || "";
   const tenantUi = useTenantUi();
   const isAdmin = pathname.startsWith("/admin");
-  const isGuide = pathname.startsWith("/guide");
   const siteDesign = parseSiteDesignId(tenantUi?.siteDesign);
 
   if (isAdmin) {
@@ -34,15 +33,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (isGuide) {
-    return (
-      <div className="guide-doc-shell min-h-screen flex flex-col bg-[#f7f8fa] text-gray-900">
-        <main className="flex-1 pb-10">{children}</main>
-        {siteDesign === "e" ? <FooterRe /> : <Footer isLoggedIn={false} />}
-      </div>
-    );
-  }
-
+  // 가이드(/guide)도 메인과 동일한 사이트 크롬 유지
   if (siteDesign === "e") {
     return (
       <>

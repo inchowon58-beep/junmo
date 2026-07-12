@@ -96,15 +96,15 @@ export function OgBrandedLayout({
       </div>
 
       <div style={{ color: OG_COLORS.gray, fontSize: 20 }}>
-        파양 · 무료분양 · 입양 상담
+        제주 · 서귀포 공인중개
       </div>
     </div>
   );
 }
 
+/** 윤슬 — 바닷가에 빛나는 빛 느낌 파비콘 */
 export function FaviconLayout({ size }: { size: number }): ReactNode {
-  const fontSize = size >= 180 ? 56 : size >= 48 ? 18 : 14;
-  const label = size >= 180 ? "아가" : "🐾";
+  const glow = size >= 48 ? 10 : 4;
 
   return (
     <div
@@ -114,15 +114,45 @@ export function FaviconLayout({ size }: { size: number }): ReactNode {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `linear-gradient(145deg, ${OG_COLORS.orange} 0%, ${OG_COLORS.orangeLight} 100%)`,
-        borderRadius: size >= 48 ? 20 : 6,
-        color: OG_COLORS.white,
-        fontSize,
-        fontWeight: 900,
-        letterSpacing: "-0.04em",
+        position: "relative",
+        overflow: "hidden",
+        borderRadius: size >= 48 ? 18 : 6,
+        background: "linear-gradient(165deg, #0a2744 0%, #135a8a 42%, #1a8fb5 72%, #7ec8e3 100%)",
       }}
     >
-      {label}
+      <div
+        style={{
+          position: "absolute",
+          width: size * 0.7,
+          height: size * 0.35,
+          bottom: size * 0.18,
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.18)",
+          filter: `blur(${glow}px)`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          width: size * 0.28,
+          height: size * 0.28,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #fff9e6 0%, #ffe08a 35%, rgba(255,200,80,0.15) 70%, transparent 100%)",
+          boxShadow: `0 0 ${glow * 2}px rgba(255, 230, 150, 0.85)`,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          width: size * 0.08,
+          height: size * 0.08,
+          top: size * 0.22,
+          right: size * 0.22,
+          borderRadius: "50%",
+          background: "#fff8dc",
+          opacity: 0.9,
+        }}
+      />
     </div>
   );
 }

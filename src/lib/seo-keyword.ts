@@ -22,84 +22,78 @@ export function dedupeRegionInCompact(text: string, region: string): string {
   return result;
 }
 
-function formatKeywordAfterRegion(compact: string, region: string): string {
-  if (!compact.startsWith(region)) {
-    return compact.replace(/\s+/g, " ").trim();
-  }
-
-  const rest = compact.slice(region.length);
-  if (!rest) return region;
-
-  // 지역 + 서비스 키워드 사이에만 띄어쓰기 (은평구 철거지원금)
-  return `${region} ${rest}`;
+/**
+ * 사용자가 입력한 키워드를 그대로 유지 (임의 띄어쓰기 삽입 금지).
+ * 연속 공백만 정리.
+ */
+export function normalizeSeoKeyword(keyword: string): string {
+  return keyword.trim().replace(/\s+/g, " ");
 }
 
-/** "자양동 자양동철거" → "자양동철거" 등 지역 중복 제거 */
+/**
+ * 본문·FAQ에서 키워드가 글자 사이에 공백이 끼인 경우
+ * (예: 서귀포부동 산) → 원본 키워드로 복원.
+ */
+export function enforceExactKeyword(text: string, keyword: string): string {
+  const exact = normalizeSeoKeyword(keyword);
+  if (!exact || !text) return text;
+
+  const chars = [...exact];
+  if (chars.length < 2) return text;
+
+  const loose = chars.map((ch) => escapeRegExp(ch)).join("\\s*");
+  return text.replace(new RegExp(loose, "g"), exact);
+}
+
+/** "자양동 자양동철거" → "자양동철거" 등 지역 중복만 제거 (키워드 띄어쓰기 강제 금지) */
 export function dedupeRegionInText(text: string, region: string | null): string {
   if (!text?.trim()) return "";
-  if (!region) return text.trim().replace(/\s+/g, " ");
+  let result = text.trim().replace(/[ \t]+/g, " ");
+  if (!region) return result;
 
   const esc = escapeRegExp(region);
-  let result = text.trim().replace(/\s+/g, " ");
-
-  result = result.replace(new RegExp(`^${esc}\\s+${esc}(?=[가-힣])`, "gi"), region);
+  result = result.replace(new RegExp(`^${esc}\\s+${esc}(?=[가-힣A-Za-z0-9])`, "gi"), region);
   result = result.replace(new RegExp(`(${esc})\\s+\\1`, "gi"), "$1");
-
-  const compact = result.replace(/\s/g, "");
-  const dedupedCompact = dedupeRegionInCompact(compact, region);
-  if (dedupedCompact !== compact) {
-    result = formatKeywordAfterRegion(dedupedCompact, region);
-  }
-
-  return result.replace(/\s+/g, " ").trim();
-}
-
-/** 입력 키워드 정규화 — 지역·띄어쓰기 중복 정리 */
-export function normalizeSeoKeyword(keyword: string): string {
-  const spaced = keyword.trim().replace(/\s+/g, " ");
-  const compact = spaced.replace(/\s/g, "");
-  const region =
-    extractRegionFromKeyword(compact) || extractRegionFromKeyword(spaced);
-
-  if (!region) return spaced;
-
-  const fixedCompact = dedupeRegionInCompact(compact, region);
-  return formatKeywordAfterRegion(fixedCompact, region);
+  return result.trim();
 }
 
 export function extractRegionForKeyword(keyword: string): string | null {
-  const normalized = normalizeSeoKeyword(keyword);
-  return extractRegionFromKeyword(normalized.replace(/\s/g, ""));
+  return extractRegionFromKeyword(normalizeSeoKeyword(keyword).replace(/\s/g, ""));
 }
 
-/** 지역명을 제외한 서비스 문구 (제목·본문 조합용) */
+/** 지역명을 제외한 서비스 문구 (제목·본문 조합용) — 원본 키워드 기준 */
 export function extractServicePhrase(keyword: string, region: string | null): string {
   const normalized = normalizeSeoKeyword(keyword);
   if (!region) return normalized;
 
+  const compact = normalized.replace(/\s/g, "");
+  if (compact.startsWith(region) && compact.length > region.length) {
+    return compact.slice(region.length);
+  }
+
   const esc = escapeRegExp(region);
-  const withoutRegion = normalized
-    .replace(new RegExp(`^${esc}\\s*`, "i"), "")
-    .trim();
-
-  if (withoutRegion) return withoutRegion;
-  return normalized;
+  const withoutRegion = normalized.replace(new RegExp(`^${esc}\\s*`, "i"), "").trim();
+  return withoutRegion || normalized;
 }
 
-/** 제목·설명용 핵심 키워드 (지역 1회) */
+/** 제목·설명용 핵심 키워드 — 사용자 입력 그대로 */
 export function buildSeoCorePhrase(keyword: string): string {
-  const normalized = normalizeSeoKeyword(keyword);
-  const region = extractRegionForKeyword(keyword);
-  return dedupeRegionInText(normalized, region);
+  return normalizeSeoKeyword(keyword);
 }
 
-export function polishSeoText(text: string, region: string | null): string {
-  return dedupeRegionInText(text, region);
+export function polishSeoText(text: string, region: string | null, exactKeyword?: string): string {
+  let result = dedupeRegionInText(text, region);
+  if (exactKeyword) result = enforceExactKeyword(result, exactKeyword);
+  return result;
 }
 
 export function polishSeoHtmlContent(html: string, keyword: string): string {
-  const region = extractRegionForKeyword(keyword);
-  return dedupeRegionInText(html, region);
+  const exact = normalizeSeoKeyword(keyword);
+  const region = extractRegionForKeyword(exact);
+  // HTML 전체를 compact 재조립하지 않음 — 키워드만 원본으로 강제
+  let result = dedupeRegionInText(html, region);
+  result = enforceExactKeyword(result, exact);
+  return result;
 }
 
 /** 제목에서 상호명 제거 (메타 template에서 1회만 붙임) */
@@ -175,18 +169,16 @@ export function buildSeoBrowserTitle(pageTitle: string, brandName: string, seed?
 }
 
 const TITLE_TEMPLATES: ((phrase: string, region: string | null) => string)[] = [
+  (phrase) => phrase,
+  (phrase, region) => `${phrase} 중개 안내`,
+  (phrase, region) => `${phrase} 상담 가이드`,
+  (phrase, region) => `${phrase} — 실무 체크`,
   (phrase, region) => `${region ? `${region} ` : ""}${phrase}`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 파양·무료분양`.trim(),
-  (phrase, region) =>
-    `${region ? `${region} ` : ""}${phrase} — 입소·분양 상담`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 전문 센터`.trim(),
-  (phrase, region) =>
-    `${region ? `${region} ` : ""}강아지·고양이 ${phrase}`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 입소 비용 안내`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 맞춤 상담`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} · 무료분양·입양`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 현장 안내`.trim(),
-  (phrase, region) => `${region ? `${region} ` : ""}${phrase} 투명 입소`.trim(),
+  (phrase) => `${phrase} 알아보기`,
+  (phrase) => `${phrase} 핵심 정리`,
+  (phrase) => `${phrase} 자주 묻는 내용`,
+  (phrase) => `${phrase} 계약 전 안내`,
+  (phrase) => `${phrase} 지역 정보`,
 ];
 
 export function finalizeSeoTitle(title: string, keyword: string): string {
@@ -199,7 +191,9 @@ export function finalizeSeoTitle(title: string, keyword: string): string {
     .replace(/\s*[|·-]\s*$/g, "")
     .trim();
   result = dedupeRegionInText(result, region);
+  result = enforceExactKeyword(result, normalizedKeyword);
   result = ensureRegionInTitle(result, normalizedKeyword, region);
+  result = enforceExactKeyword(result, normalizedKeyword);
   return result.slice(0, 55);
 }
 
@@ -208,8 +202,9 @@ export function generateVariedSeoTitle(
   region: string | null,
   aiTitle?: string
 ): string {
-  const resolvedRegion = region || extractRegionForKeyword(keyword);
-  const phrase = extractServicePhrase(keyword, resolvedRegion);
+  const exact = normalizeSeoKeyword(keyword);
+  const resolvedRegion = region || extractRegionForKeyword(exact);
+  const phrase = exact;
   const idx = hashText(`${keyword}-${phrase}-title`) % TITLE_TEMPLATES.length;
   const templateTitle = TITLE_TEMPLATES[idx](phrase, resolvedRegion);
 
@@ -217,7 +212,7 @@ export function generateVariedSeoTitle(
     return finalizeSeoTitle(templateTitle, keyword);
   }
 
-  const polishedAi = polishSeoText(aiTitle.trim(), resolvedRegion);
+  const polishedAi = polishSeoText(aiTitle.trim(), resolvedRegion, exact);
   const compactAi = polishedAi.replace(/\s/g, "");
   const aiLooksDuplicate =
     !!resolvedRegion &&
@@ -232,9 +227,7 @@ export function generateVariedSeoTitle(
     polishedAi.includes("견적 지원금") ||
     (polishedAi.match(/\|/g)?.length ?? 0) > 0;
 
-  const aiMissingRegion = !!resolvedRegion && !polishedAi.includes(resolvedRegion);
-
-  if (aiLooksDuplicate || aiTooGeneric || aiMissingRegion || polishedAi.length > 55) {
+  if (aiLooksDuplicate || aiTooGeneric || polishedAi.length > 55) {
     return finalizeSeoTitle(templateTitle, keyword);
   }
 

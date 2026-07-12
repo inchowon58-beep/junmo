@@ -8,6 +8,7 @@ import {
   polishSeoHtmlContent,
   polishSeoText,
   extractRegionForKeyword,
+  enforceExactKeyword,
 } from "./seo-keyword";
 
 interface GenerateOptions {
@@ -33,6 +34,7 @@ export interface GeneratedSeoContent {
 const CONTENT_RULES = `
 작성 조건:
 - 전달된 키워드를 중심으로 한 **검색 최적화 문서**로 작성 (메인 홈페이지 소개글처럼 쓰지 말 것)
+- 키워드는 **전달받은 문자열 그대로** 사용 (글자 사이 띄어쓰기·줄바꿈으로 쪼개지 말 것)
 - 키워드를 자연스럽게 본문 전체에 5~8회 포함
 - 업체명·전화번호·주소는 반드시 {{brandName}}, {{phone}}, {{address}} 등 토큰으로만 표기 (직접 입력 금지)
 - 제주·서귀포 공인중개·부동산 중개·매매·전세·월세·상담 관점으로 작성
@@ -133,8 +135,9 @@ ${siteBrief.heroHeadline ? `- 히어로: ${siteBrief.heroHeadline}` : ""}
 - 특징: 공인중개, 투명한 상담, 지역 밀착 중개, 계약 동행
 ${tenantContextBlock}
 키워드: "${corePhrase}"
-(원본: "${keyword}" — 지역명 중복 금지)
-${region ? `지역 맥락: ${region} (제목·본문에 "${region} ${region}"처럼 두 번 쓰지 말 것)` : ""}
+※ 키워드는 띄어쓰기·음절 분리 없이 위 문자열 그대로만 사용하세요. (예: 잘못된 예 "서귀포부동 산" / 올바른 예 "${corePhrase}")
+(원본: "${keyword}")
+${region ? `지역 맥락: ${region} (키워드 자체는 절대 쪼개지 말 것)` : ""}
 제목 스타일: ${titleStyleHint}
 작성 관점: ${angle}
 고유 시드(중복 금지): ${uniqueSeed}
@@ -174,10 +177,13 @@ JSON만 응답:
 
     return {
       title: generateVariedSeoTitle(keyword, region, parsed.title),
-      description: polishSeoText(parsed.description, region),
+      description: polishSeoText(parsed.description, region, keyword),
       content: polishSeoHtmlContent(parsed.content, keyword),
       slug: parsed.slug,
-      faqs: normalizeFaqs(parsed.faqs, keyword, site),
+      faqs: normalizeFaqs(parsed.faqs, keyword, site).map((f) => ({
+        question: enforceExactKeyword(f.question, keyword),
+        answer: enforceExactKeyword(f.answer, keyword),
+      })),
     };
   } catch {
     return generateFallbackContent(keyword, site);
@@ -319,8 +325,11 @@ function generateFallbackContent(
 
   return {
     title: titleVariants[tIdx](keyword, region),
-    description: polishSeoText(descVariants[dIdx](keyword, region), region),
+    description: polishSeoText(descVariants[dIdx](keyword, region), region, keyword),
     content: polishSeoHtmlContent(content, keyword),
-    faqs: buildDefaultFaqs(keyword, site),
+    faqs: buildDefaultFaqs(keyword, site).map((f) => ({
+      question: enforceExactKeyword(f.question, keyword),
+      answer: enforceExactKeyword(f.answer, keyword),
+    })),
   };
 }
