@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { resolvePageByKey } from "@/lib/pages-resolver";
+import {
+  getCachedGuidePage,
+  getCachedGuideSlugList,
+  getCachedLegacySiteConfig,
+} from "@/lib/guide-cache";
 import { guidePageUrl } from "@/lib/constants";
 import { buildPageMetadata, getOgImageAbsoluteUrl } from "@/lib/metadata";
 import { buildDefaultFaqs } from "@/lib/gemini";
 import { resolveSeoPage, phoneToTel, getPageImageUrl } from "@/lib/site-config";
 import { getSeoContentImageUrls } from "@/lib/seo-content-images";
-import { getResolvedSiteConfig } from "@/utils/siteConfig";
 import { extractRegionFromKeyword } from "@/lib/region-parse";
 import { getNearbySubRegionLinks } from "@/lib/nearby-regions";
 import { getRelatedKeywordPageLinks } from "@/lib/related-keyword-pages";
@@ -24,7 +27,14 @@ import {
 import { ensureLocalPartners } from "@/lib/seo-local-partners";
 import { jejuImageUrl, pickJejuImageIndexes } from "@/lib/jeju-images";
 
-export const dynamic = "force-dynamic";
+/**
+ * SSR + Data Cache (ISR)
+ * - 서버에서 글을 조립해 완성 HTML을 로봇에게 제공 (클라이언트 fetch 아님)
+ * - 1시간 캐시로 수집 속도·안정성 향상
+ * - 생성 직후 revalidateTag로 캐시 무효화
+ */
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -32,11 +42,20 @@ interface Props {
 
 const DEFAULT_GEO = { lat: 33.2559783, lng: 126.5721595 };
 
+export async function generateStaticParams() {
+  try {
+    const slugs = await getCachedGuideSlugList();
+    return slugs.map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const [{ page }, { config }] = await Promise.all([
-    resolvePageByKey(slug),
-    getResolvedSiteConfig(),
+  const [{ page }, config] = await Promise.all([
+    getCachedGuidePage(slug),
+    getCachedLegacySiteConfig(),
   ]);
   if (!page) return { title: "페이지를 찾을 수 없습니다" };
 
@@ -79,9 +98,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GuidePage({ params }: Props) {
   const { slug } = await params;
-  const [{ page }, { config }] = await Promise.all([
-    resolvePageByKey(slug),
-    getResolvedSiteConfig(),
+  const [{ page }, config] = await Promise.all([
+    getCachedGuidePage(slug),
+    getCachedLegacySiteConfig(),
   ]);
   if (!page) notFound();
 

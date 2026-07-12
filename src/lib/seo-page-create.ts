@@ -14,6 +14,7 @@ import {
   getTenantPages,
   saveTenantPage,
 } from "@/lib/supabase/tenant-pages";
+import { guidePageUrl } from "@/lib/constants";
 
 function getNaverCredentials(site: Awaited<ReturnType<typeof getSiteConfig>>) {
   return {
@@ -149,6 +150,17 @@ export async function createSeoPageFromKeyword(
       error instanceof Error ? error.message : "SEO 페이지 저장 실패",
       "STORAGE"
     );
+  }
+
+  try {
+    const { revalidatePath, revalidateTag } = await import("next/cache");
+    revalidatePath(guidePageUrl(slug));
+    revalidatePath("/sitemap.xml");
+    revalidatePath("/");
+    revalidateTag("guide-pages", "max");
+    revalidateTag(`guide:${slug}`, "max");
+  } catch (error) {
+    console.error("revalidate after SEO create failed:", error);
   }
 
   const enqueueResult = await enqueueCollectionRequest(pageId, page, site.url);
