@@ -1,6 +1,16 @@
 import type { TenantThemeColor } from "@/types/tenant";
 
+/** globals.css :root 기본값과 동일 — 부동산 E 디자인·관리자 골드 */
+export const DEFAULT_BRAND_THEME: TenantThemeColor = {
+  primary: "#c9a227",
+  secondary: "#e0bc4a",
+  dark: "#0b1c33",
+  darkLight: "#163050",
+  cream: "#f7f8fa",
+};
+
 const THEME_PRESETS: TenantThemeColor[] = [
+  DEFAULT_BRAND_THEME,
   { primary: "#e85d04", secondary: "#f48c06", dark: "#1a1a1a", darkLight: "#2d2d2d", cream: "#fafafa" },
   { primary: "#2563eb", secondary: "#3b82f6", dark: "#0f172a", darkLight: "#1e293b", cream: "#f8fafc" },
   { primary: "#059669", secondary: "#10b981", dark: "#064e3b", darkLight: "#065f46", cream: "#f0fdf4" },

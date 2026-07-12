@@ -7,7 +7,7 @@ import {
   isSupabaseConfigured,
   normalizeHostname,
 } from "@/lib/supabase/tenant-db";
-import { pickThemeColor } from "@/lib/tenant-theme";
+import { DEFAULT_BRAND_THEME } from "@/lib/tenant-theme";
 import { getSettings } from "@/lib/data";
 import { resolveDailySeoLimit } from "@/lib/seo-quota";
 import { fetchNaverAccountById } from "@/lib/supabase/naver-accounts";
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
     const row = await insertTenantSiteConfig({
       site_name: siteName,
       subdomain,
-      theme_color: pickThemeColor(subdomain),
+      theme_color: DEFAULT_BRAND_THEME,
       content_data: contentData,
       naver_verification: null,
       slack_webhook: slackWebhook || null,

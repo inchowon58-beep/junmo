@@ -326,6 +326,15 @@ body.home-re-body {
 }
 
 /* 관리자·모달 입력창: 흰 배경에 어두운 글자 강제 */
+/* 관리자는 테넌트 theme_color에 물들지 않고 기본 골드 UI 유지 */
+.admin-shell {
+  --orange: #c9a227;
+  --orange-light: #e0bc4a;
+  --dark: #0b1c33;
+  --dark-light: #163050;
+  --cream: #f7f8fa;
+}
+
 .admin-shell,
 .admin-shell input,
 .admin-shell textarea,
