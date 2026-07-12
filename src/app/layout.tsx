@@ -1,24 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
-import HeaderB from "@/components/home-b/HeaderB";
-import HeaderC from "@/components/home-c/HeaderC";
-import FooterWrapper from "@/components/FooterWrapper";
-import FooterB from "@/components/home-b/FooterB";
-import FooterC from "@/components/home-c/FooterC";
-import FixedContactBar from "@/components/FixedContactBar";
-import FixedContactBarB from "@/components/home-b/FixedContactBarB";
-import FixedContactBarC from "@/components/home-c/FixedContactBarC";
-import HeaderD from "@/components/home-d/HeaderD";
-import FooterD from "@/components/home-d/FooterD";
-import FixedContactBarD from "@/components/home-d/FixedContactBarD";
+import HeaderRe from "@/components/home-re/HeaderRe";
+import FooterRe from "@/components/home-re/FooterRe";
+import FixedContactBarRe from "@/components/home-re/FixedContactBarRe";
 import TenantThemeStyles from "@/components/TenantThemeStyles";
 import { SiteConfigProvider } from "@/components/SiteConfigProvider";
 import { getResolvedSiteConfig } from "@/utils/siteConfig";
 import { buildSiteMetadata } from "@/lib/metadata";
 import { NAVER_SITE_VERIFICATION } from "@/lib/constants";
-import { parseSiteDesignId } from "@/lib/site-designs";
-import { showCompanyContact } from "@/lib/exposure-mode";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { config, tenant } = await getResolvedSiteConfig();
@@ -36,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#fafafa",
+  themeColor: "#0b1c33",
 };
 
 export default async function RootLayout({
@@ -45,66 +34,48 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { config, tenant, tenantUi, theme } = await getResolvedSiteConfig();
-  const showCompany = showCompanyContact(config.exposureMode);
   const naverVerification =
     tenant?.naver_verification?.trim() || NAVER_SITE_VERIFICATION;
-  const headerStyle = tenantUi?.headerStyle || "sticky";
-  const siteDesign = parseSiteDesignId(tenantUi?.siteDesign);
-  const isDesignB = siteDesign === "b";
-  const isDesignC = siteDesign === "c";
-  const isDesignD = siteDesign === "d";
-  const isAltDesign = isDesignB || isDesignC || isDesignD;
-  const bodyClasses = [
-    "antialiased",
-    `tenant-design-${siteDesign}`,
-    isDesignB ? "home-b-root" : "",
-    isDesignC ? "home-c-root" : "",
-    isDesignD ? "home-d-root" : "",
-    !isAltDesign && tenantUi?.designVariant ? `tenant-${tenantUi.designVariant}` : "",
-    !isAltDesign && headerStyle === "overlay" ? "tenant-header-overlay" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
-  const businessJsonLd = showCompany
-    ? {
-        "@context": "https://schema.org",
-        "@type": "AnimalShelter",
-        name: config.brandName,
-        legalName: config.companyName,
-        description: config.description,
-        telephone: config.phone,
-        email: config.email,
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: config.address,
-          addressCountry: "KR",
-        },
-        founder: {
-          "@type": "Person",
-          name: config.representative,
-        },
-        areaServed: {
-          "@type": "Country",
-          name: "대한민국",
-        },
-      }
-    : {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: config.brandName,
-        description: config.description,
-        url: config.url,
-      };
+  const businessJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    name: config.brandName,
+    legalName: config.companyName,
+    description: config.description,
+    telephone: config.phone,
+    url: config.url,
+    image: `${config.url.replace(/\/$/, "")}/images/ceo-yangjunmo.png`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "동홍중앙로58-1, 1층",
+      addressLocality: "서귀포시",
+      addressRegion: "제주특별자치도",
+      addressCountry: "KR",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 33.2559783,
+      longitude: 126.5721595,
+    },
+    founder: {
+      "@type": "Person",
+      name: config.representative,
+    },
+    award: "2026 서귀포시 우수공인중개사",
+    taxID: config.businessNumber,
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: "제주특별자치도 서귀포시",
+    },
+    sameAs: [config.placeUrl].filter(Boolean),
+  };
 
   return (
     <html lang="ko">
       <head>
         <TenantThemeStyles theme={theme} />
-        <meta
-          name="naver-site-verification"
-          content={naverVerification}
-        />
+        <meta name="naver-site-verification" content={naverVerification} />
         <link
           rel="alternate"
           type="application/rss+xml"
@@ -116,6 +87,10 @@ export default async function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
         />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/Paperlogy.css"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -123,37 +98,12 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${bodyClasses} min-h-screen flex flex-col`}>
+      <body className="home-re-body antialiased min-h-screen flex flex-col">
         <SiteConfigProvider config={config} tenantUi={tenantUi}>
-          {isDesignD ? (
-            <>
-              <HeaderD />
-              <main className="flex-1">{children}</main>
-              <FooterD />
-              <FixedContactBarD />
-            </>
-          ) : isDesignC ? (
-            <>
-              <HeaderC />
-              <main className="flex-1">{children}</main>
-              <FooterC />
-              <FixedContactBarC />
-            </>
-          ) : isDesignB ? (
-            <>
-              <HeaderB />
-              <main className="flex-1">{children}</main>
-              <FooterB />
-              <FixedContactBarB />
-            </>
-          ) : (
-            <>
-              {headerStyle !== "hidden" && <Header headerStyle={headerStyle} />}
-              <main className="flex-1 pb-24">{children}</main>
-              <FooterWrapper />
-              <FixedContactBar />
-            </>
-          )}
+          <HeaderRe />
+          <main className="flex-1 pb-20">{children}</main>
+          <FooterRe />
+          <FixedContactBarRe />
         </SiteConfigProvider>
       </body>
     </html>

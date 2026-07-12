@@ -42,6 +42,8 @@ export interface Settings {
   email?: string;
   address?: string;
   businessNumber?: string;
+  registrationNumber?: string;
+  placeUrl?: string;
   representative?: string;
   imageCdn?: string;
   imageCount?: number;

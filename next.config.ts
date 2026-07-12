@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "image.cattery.co.kr",
+        pathname: "/jejuland/**",
+      },
+      {
+        protocol: "https",
+        hostname: "image.cattery.co.kr",
         pathname: "/dogboho/**",
       },
       {

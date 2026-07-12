@@ -95,7 +95,7 @@ export function buildSiteMetadata(config: SiteConfig): Metadata {
   const images = buildOgImageMeta(config, "/opengraph-image", config.brandName);
   const baseUrl = getSiteUrl(config);
   const suffixKeywords = pickSeoSuffixKeywords(config.brandName, 3);
-  const defaultTitle = `${config.brandName} | 강아지·고양이 파양·무료분양 · ${suffixKeywords.join("·")}`;
+  const defaultTitle = `${config.brandName} | 2026 서귀포시 우수공인중개사 · ${suffixKeywords.join("·")}`;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -106,12 +106,12 @@ export function buildSiteMetadata(config: SiteConfig): Metadata {
     description: config.description,
     keywords: [
       config.brandName,
-      "강아지파양",
-      "고양이파양",
-      "강아지무료분양",
-      "고양이무료분양",
-      "강아지보호소",
-      "고양이보호소",
+      "제주공인중개사",
+      "서귀포공인중개사",
+      "서귀포시 우수공인중개사",
+      "양준모공인중개사",
+      "태솔부동산",
+      "제주부동산",
       ...suffixKeywords,
     ],
     alternates: {
