@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { TenantSiteSummary } from "@/types/tenant";
+import type { NaverAccountSummary, TenantSiteSummary } from "@/types/tenant";
 import { siteDesignLabel } from "@/lib/site-designs";
 
 function formatDate(iso: string): string {
@@ -69,6 +69,11 @@ function NaverIntegrationBadges({
   );
 }
 
+function defaultAdoptHost(): string {
+  if (typeof window === "undefined") return "";
+  return window.location.host.replace(/^www\./, "");
+}
+
 export default function TenantSitesClient() {
   const [sites, setSites] = useState<TenantSiteSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +81,14 @@ export default function TenantSitesClient() {
   const [message, setMessage] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [markingNaverId, setMarkingNaverId] = useState<string | null>(null);
+
+  const [showAdopt, setShowAdopt] = useState(false);
+  const [adoptName, setAdoptName] = useState("양준모공인중개사 태솔");
+  const [adoptHost, setAdoptHost] = useState("");
+  const [adoptSlack, setAdoptSlack] = useState("");
+  const [adoptNaverId, setAdoptNaverId] = useState("");
+  const [naverAccounts, setNaverAccounts] = useState<NaverAccountSummary[]>([]);
+  const [adopting, setAdopting] = useState(false);
 
   async function loadSites() {
     setLoading(true);
@@ -102,6 +115,23 @@ export default function TenantSitesClient() {
   useEffect(() => {
     void loadSites();
   }, []);
+
+  useEffect(() => {
+    if (!showAdopt) return;
+    setAdoptHost((prev) => prev || defaultAdoptHost());
+    async function loadAccounts() {
+      try {
+        const res = await fetch("/api/admin/naver-accounts", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = Array.isArray(data.accounts) ? data.accounts : [];
+        setNaverAccounts(list.filter((a: NaverAccountSummary) => a.isActive));
+      } catch {
+        /* ignore */
+      }
+    }
+    void loadAccounts();
+  }, [showAdopt]);
 
   async function handleDelete(site: TenantSiteSummary) {
     const confirmed = window.confirm(
@@ -159,6 +189,40 @@ export default function TenantSitesClient() {
     }
   }
 
+  async function handleAdopt(e: React.FormEvent) {
+    e.preventDefault();
+    setAdopting(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/admin/adopt-site", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          siteName: adoptName,
+          subdomain: adoptHost,
+          slackWebhook: adoptSlack,
+          naverAccountId: adoptNaverId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "편입에 실패했습니다.");
+        return;
+      }
+      setShowAdopt(false);
+      setAdoptSlack("");
+      setAdoptNaverId("");
+      setMessage(data.message || "등록 목록에 편입되었습니다.");
+      await loadSites();
+    } catch {
+      setError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setAdopting(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange/5 py-10 px-4">
       <div className="max-w-5xl mx-auto">
@@ -169,15 +233,19 @@ export default function TenantSitesClient() {
             </p>
             <h1 className="text-2xl sm:text-3xl font-bold text-dark">등록 사이트 목록</h1>
             <p className="text-sm text-gray-500 mt-2">
-              Supabase에 등록된 서브도메인 사이트를 확인·수정·삭제합니다.
-              Vercel에서 도메인을 해제해도 여기 목록은 남으므로, 필요 시 삭제하세요.
+              Supabase에 등록된 서브도메인 사이트를 확인·수정·삭제합니다. 이미 Vercel에 올린
+              사이트는 「기존 사이트 편입」으로 디자인 유지한 채 목록에 넣을 수 있습니다.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3 text-sm shrink-0">
-            <Link
-              href="/admin/register"
-              className="text-orange font-medium hover:underline"
+          <div className="flex flex-wrap gap-3 text-sm shrink-0 items-center">
+            <button
+              type="button"
+              onClick={() => setShowAdopt(true)}
+              className="text-white bg-dark font-medium px-3 py-1.5 rounded-lg hover:bg-dark-light transition"
             >
+              기존 사이트 편입
+            </button>
+            <Link href="/admin/register" className="text-orange font-medium hover:underline">
               + 신규 등록
             </Link>
             <Link href="/admin/master" className="text-gray-500 hover:underline">
@@ -201,18 +269,126 @@ export default function TenantSitesClient() {
           </p>
         )}
 
+        {showAdopt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
+              <button
+                type="button"
+                onClick={() => setShowAdopt(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+              <h2 className="text-xl font-bold text-dark mb-1">기존 Vercel 사이트 편입</h2>
+              <p className="text-sm text-gray-500 mb-5">
+                이미 배포된 사이트를 등록 목록에만 추가합니다. E 디자인·홈 화면은 그대로 두고,
+                네이버 계정·슬랙만 연결합니다. (Vercel 재배포·도메인 재등록 없음)
+              </p>
+              <form onSubmit={handleAdopt} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">사이트명</label>
+                  <input
+                    value={adoptName}
+                    onChange={(e) => setAdoptName(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-orange bg-white text-gray-900"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    도메인 (호스트)
+                  </label>
+                  <input
+                    value={adoptHost}
+                    onChange={(e) => setAdoptHost(e.target.value)}
+                    placeholder="예: jejuzone.yourdogzone.co.kr"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-orange bg-white text-gray-900 font-mono text-sm"
+                    required
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    실제 접속 도메인과 같아야 슬랙·네이버가 이 사이트에 연결됩니다.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Slack Webhook
+                  </label>
+                  <input
+                    value={adoptSlack}
+                    onChange={(e) => setAdoptSlack(e.target.value)}
+                    placeholder="https://hooks.slack.com/services/..."
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-orange bg-white text-gray-900 text-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">네이버 계정</label>
+                  <select
+                    value={adoptNaverId}
+                    onChange={(e) => setAdoptNaverId(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-orange bg-white text-gray-900"
+                    required
+                  >
+                    <option value="">선택하세요</option>
+                    {naverAccounts.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.label || a.naverId}
+                        {a.vmLabel ? ` · ${a.vmLabel}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  {naverAccounts.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      활성 네이버 계정이 없습니다.{" "}
+                      <Link href="/admin/naver-accounts" className="underline">
+                        네이버 계정 관리
+                      </Link>
+                      에서 먼저 등록하세요.
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdopt(false)}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={adopting || !adoptNaverId}
+                    className="flex-1 py-2.5 rounded-xl bg-orange text-white font-bold hover:bg-orange-light disabled:opacity-50"
+                  >
+                    {adopting ? "편입 중..." : "목록에 편입"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="p-12 text-center text-gray-400 text-sm">불러오는 중...</div>
           ) : sites.length === 0 ? (
             <div className="p-12 text-center">
               <p className="text-gray-500 mb-4">등록된 테넌트 사이트가 없습니다.</p>
-              <Link
-                href="/admin/register"
-                className="inline-flex items-center gap-2 bg-orange text-white font-bold px-5 py-2.5 rounded-xl hover:bg-orange-light transition text-sm"
-              >
-                + 첫 사이트 등록
-              </Link>
+              <div className="flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAdopt(true)}
+                  className="inline-flex items-center gap-2 bg-dark text-white font-bold px-5 py-2.5 rounded-xl hover:bg-dark-light transition text-sm"
+                >
+                  기존 사이트 편입
+                </button>
+                <Link
+                  href="/admin/register"
+                  className="inline-flex items-center gap-2 bg-orange text-white font-bold px-5 py-2.5 rounded-xl hover:bg-orange-light transition text-sm"
+                >
+                  + 신규 등록
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
