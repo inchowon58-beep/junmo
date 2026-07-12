@@ -24,13 +24,13 @@ export default function GalleryRe() {
         </p>
         <div className="re-gallery mt-12">
           {INDEXES.map((idx, i) => (
-            <figure key={idx} className={`re-gallery-item re-gallery-item-${i + 1}`}>
+            <figure key={idx} className="re-gallery-item">
               <Image
                 src={jejuImageUrl(idx)}
                 alt={CAPTIONS[i]}
                 fill
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 33vw"
               />
               <figcaption className="re-gallery-cap">{CAPTIONS[i]}</figcaption>
             </figure>
