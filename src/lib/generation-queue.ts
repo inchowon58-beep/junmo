@@ -72,13 +72,26 @@ async function loadQueue(scope: QueueScope): Promise<GenerationQueueData> {
   return loadTenantGenerationQueue(scope.siteConfigId);
 }
 
-async function saveQueue(scope: QueueScope, queue: GenerationQueueData): Promise<void> {
+/**
+ * 변경된 job만 저장.
+ * - legacy: 단일 JSON 파일 1회 쓰기 (전체 저장이 곧 1회 I/O)
+ * - tenant: 바뀐 job만 upsert — 전체 큐 재저장(O(N) Supabase 왕복) 방지.
+ *   pending이 수백 건이어도 generate-next 1회당 DB 쓰기가 상수로 유지됨.
+ */
+async function persistChangedJobs(
+  scope: QueueScope,
+  changed: GenerationJob[],
+  queue: GenerationQueueData
+): Promise<void> {
+  if (changed.length === 0) return;
+
   if (scope.type === "legacy") {
     await saveGenerationQueue(queue);
     return;
   }
+
   queue.updatedAt = new Date().toISOString();
-  for (const job of queue.jobs) {
+  for (const job of changed) {
     await saveTenantGenerationJob(scope.siteConfigId, {
       ...job,
       siteConfigId: scope.siteConfigId,
@@ -138,9 +151,12 @@ function normalizeKeywordKey(keyword: string): string {
   return normalizeSeoKeyword(keyword).replace(/\s/g, "").toLowerCase();
 }
 
-async function releaseStaleProcessingJobs(queue: GenerationQueueData): Promise<boolean> {
+/** 오래 멈춘 processing job을 pending으로 되돌리고, 되돌린 job 목록을 반환 */
+async function releaseStaleProcessingJobs(
+  queue: GenerationQueueData
+): Promise<GenerationJob[]> {
   const now = Date.now();
-  let changed = false;
+  const changed: GenerationJob[] = [];
 
   for (const job of queue.jobs) {
     if (job.status !== "processing") continue;
@@ -149,7 +165,7 @@ async function releaseStaleProcessingJobs(queue: GenerationQueueData): Promise<b
       job.status = "pending";
       job.startedAt = undefined;
       job.error = "처리 시간 초과 — 다시 대기열에 넣었습니다.";
-      changed = true;
+      changed.push(job);
     }
   }
 
@@ -191,7 +207,7 @@ export async function enqueueGenerationKeywords(keywords: string[]): Promise<{
 }> {
   const scope = await resolveQueueScope();
   const queue = await loadQueue(scope);
-  await releaseStaleProcessingJobs(queue);
+  const staleChanged = await releaseStaleProcessingJobs(queue);
 
   const existingKeys = await getExistingKeywordKeys(scope);
 
@@ -233,9 +249,10 @@ export async function enqueueGenerationKeywords(keywords: string[]): Promise<{
     existingKeys.add(key);
   }
 
-  if (addedJobs.length > 0) {
+  const changed = [...staleChanged, ...addedJobs];
+  if (changed.length > 0) {
     queue.updatedAt = now;
-    await saveQueue(scope, queue);
+    await persistChangedJobs(scope, changed, queue);
   }
 
   return {
@@ -253,9 +270,10 @@ export async function getPendingGenerationJobsForWorker(): Promise<{
 }> {
   const scope = await resolveQueueScope();
   const queue = await loadQueue(scope);
-  if (await releaseStaleProcessingJobs(queue)) {
+  const staleChanged = await releaseStaleProcessingJobs(queue);
+  if (staleChanged.length > 0) {
     queue.updatedAt = new Date().toISOString();
-    await saveQueue(scope, queue);
+    await persistChangedJobs(scope, staleChanged, queue);
   }
 
   const jobs = queue.jobs
@@ -287,9 +305,10 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
   const scopeInfo = scopeToInfo(scope);
   const queue = await loadQueue(scope);
 
-  if (await releaseStaleProcessingJobs(queue)) {
+  const staleChanged = await releaseStaleProcessingJobs(queue);
+  if (staleChanged.length > 0) {
     queue.updatedAt = new Date().toISOString();
-    await saveQueue(scope, queue);
+    await persistChangedJobs(scope, staleChanged, queue);
   }
 
   const processing = queue.jobs.find((j) => j.status === "processing");
@@ -356,7 +375,7 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
   next.startedAt = now;
   next.error = undefined;
   queue.updatedAt = now;
-  await saveQueue(scope, queue);
+  await persistChangedJobs(scope, [next], queue);
 
   const createOptions =
     scope.type === "tenant" ? { siteConfigId: scope.siteConfigId } : undefined;
@@ -371,7 +390,7 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
     next.pageId = page.id;
     next.slug = page.slug;
     queue.updatedAt = next.completedAt;
-    await saveQueue(scope, queue);
+    await persistChangedJobs(scope, [next], queue);
 
     const remaining = queue.jobs.filter((j) => j.status === "pending").length;
     const quotaAfter = await getWorkerQuota(scope, remaining);
@@ -403,7 +422,7 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
         next.status = "pending";
         next.startedAt = undefined;
         queue.updatedAt = completedAt;
-        await saveQueue(scope, queue);
+        await persistChangedJobs(scope, [next], queue);
         const quotaBlocked = await getWorkerQuota(
           scope,
           queue.jobs.filter((j) => j.status === "pending").length
@@ -423,7 +442,7 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
         next.status = "failed";
         next.error = error.message;
         queue.updatedAt = completedAt;
-        await saveQueue(scope, queue);
+        await persistChangedJobs(scope, [next], queue);
         return {
           ok: false,
           status: "service",
@@ -443,7 +462,7 @@ export async function processNextGenerationJob(): Promise<GenerationWorkerRespon
     }
 
     queue.updatedAt = completedAt;
-    await saveQueue(scope, queue);
+    await persistChangedJobs(scope, [next], queue);
 
     return {
       ok: false,
@@ -504,6 +523,7 @@ export async function replacePendingGenerationKeywords(keywords: string[]): Prom
 
   const existingKeys = await getExistingKeywordKeys(scope);
 
+  const addedJobs: GenerationJob[] = [];
   const skippedReasons: string[] = [];
   let skipped = 0;
   let replaced = 0;
@@ -536,20 +556,28 @@ export async function replacePendingGenerationKeywords(keywords: string[]): Prom
       continue;
     }
 
-    queue.jobs.push({
+    const job: GenerationJob = {
       id: `gen-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       keyword: trimmed,
       normalizedKeyword: key,
       status: "pending",
       requestedAt: now,
       siteConfigId: scope.type === "tenant" ? scope.siteConfigId : undefined,
-    });
+    };
+    queue.jobs.push(job);
+    addedJobs.push(job);
     replaced++;
     existingKeys.add(key);
   }
 
   queue.updatedAt = now;
-  await saveQueue(scope, queue);
+  if (scope.type === "legacy") {
+    // pending 전체 교체가 파일에 반영되도록 항상 저장 (빈 목록 = 전체 비움)
+    await saveGenerationQueue(queue);
+  } else {
+    // tenant: 기존 pending은 이미 clearTenantPendingJobs로 삭제됨 → 신규만 저장
+    await persistChangedJobs(scope, addedJobs, queue);
+  }
 
   return { replaced, skipped, skippedReasons, scope: scopeToInfo(scope) };
 }

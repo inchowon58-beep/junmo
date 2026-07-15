@@ -41,6 +41,34 @@ const GEMINI_MODELS = [
   "gemini-2.5-flash-lite",
 ] as const;
 
+/** 단일 Gemini 호출 최대 대기 (ms) — 이 시간을 넘으면 다음 시도로 넘어감 */
+const GEMINI_CALL_TIMEOUT_MS = 45_000;
+/**
+ * 전체 생성 시간 예산 (ms). Cloudflare 프록시(~100초)·VM read timeout(180초) 안에서
+ * 반드시 응답을 돌려주기 위해 총 시도 시간을 제한한다.
+ */
+const GEMINI_TOTAL_BUDGET_MS = 85_000;
+
+/** promise가 ms 안에 끝나지 않으면 reject — 서버가 무한정 대기하지 않도록 */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} 응답 지연(${Math.round(ms / 1000)}s 초과)`)),
+      ms
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 const CONTENT_RULES = `
 작성 조건:
 - 전달된 키워드를 중심으로 한 **검색 최적화 문서**로 작성 (메인 홈페이지 소개글처럼 쓰지 말 것)
@@ -171,9 +199,15 @@ JSON만 응답:
   const genAI = new GoogleGenerativeAI(key);
 
   const errors: string[] = [];
+  const deadline = Date.now() + GEMINI_TOTAL_BUDGET_MS;
 
   for (const modelName of GEMINI_MODELS) {
     for (const useJsonMime of [true, false]) {
+      const remainingBudget = deadline - Date.now();
+      if (remainingBudget <= 3_000) {
+        errors.push("전체 생성 시간 예산 초과");
+        break;
+      }
       try {
         const model = genAI.getGenerativeModel({
           model: modelName,
@@ -185,7 +219,12 @@ JSON만 응답:
           },
         });
 
-        const result = await model.generateContent(prompt);
+        const callTimeout = Math.min(GEMINI_CALL_TIMEOUT_MS, remainingBudget);
+        const result = await withTimeout(
+          model.generateContent(prompt),
+          callTimeout,
+          `Gemini(${modelName})`
+        );
         const text = result.response.text();
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
